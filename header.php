@@ -18,8 +18,13 @@
 
 // ── Kết nối DB nếu chưa có ─────────────────────────────────────────────
 if (!isset($conn)) {
+<<<<<<< HEAD
     include($_SERVER['DOCUMENT_ROOT'] . '/qlshopdt_api/api/db.php');
     require_once($_SERVER['DOCUMENT_ROOT'] . '/qlshopdt_api/api/db.php');
+=======
+    include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+>>>>>>> 29d6458da3fb42784d3f2fc5541bee4e0583f2d4
 }
 
 // ── Lấy role người dùng ────────────────────────────────────────────────

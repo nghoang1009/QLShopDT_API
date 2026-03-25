@@ -38,7 +38,7 @@
         ]);
 
         // Đổi đường dẫn API cho đúng project của bạn
-        $api_url = "http://localhost/Test1/api/insert_sanpham_api.php";
+        $api_url = "http://localhost/QLShopDT_API/api/insert_sanpham_api.php";
         $options = [
             "http" => [
                 "method"  => "POST",

@@ -1,6 +1,6 @@
 <?php
-include($_SERVER['DOCUMENT_ROOT'] . '/Test1/api/db.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/Test1/api/db.php');;
+include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');;
 include "../header.php";
 session_start();
 
@@ -12,7 +12,7 @@ if (!isset($_SESSION['username'])) {
 $username = $_SESSION['username'];
 
 // Gọi API lấy danh sách sản phẩm
-$api_url = "http://localhost/Test1/api/get_sanpham_api.php"; // ← đổi Test1 thành tên project của bạn
+$api_url = "http://localhost/QLShopDT_API/api/get_sanpham_api.php"; // ← đổi Test1 thành tên project của bạn
 
 $ch = curl_init($api_url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

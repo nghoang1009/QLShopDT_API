@@ -47,7 +47,7 @@
     ]);
 
     // ← đổi Test1 thành tên project của bạn
-    $api_url = "http://localhost/Test1/api/update_sanpham_api.php";
+    $api_url = "http://localhost/QLShopDT_API/api/update_sanpham_api.php";
 
     $ch = curl_init($api_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

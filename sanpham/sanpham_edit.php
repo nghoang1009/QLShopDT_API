@@ -11,7 +11,7 @@
     <?php
         // Lấy dữ liệu sản phẩm hiện tại từ DB để điền vào form
         // (vẫn dùng DB trực tiếp để load form — chỉ phần lưu mới gọi API)
-        require_once($_SERVER['DOCUMENT_ROOT'] . '/Test1/api/db.php');;
+        require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');;
 
         $sql_select = "SELECT * FROM sanpham WHERE masp = '$masp'";
         $result = mysqli_query($conn, $sql_select);
