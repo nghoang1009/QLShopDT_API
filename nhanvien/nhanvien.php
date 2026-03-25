@@ -1,6 +1,7 @@
 <?php
     include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
     require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+    include "../header.php";
 session_start();
 
 // Kiểm tra đăng nhập

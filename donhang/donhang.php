@@ -21,6 +21,7 @@ session_start();
 
         include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+        include "../header.php";
         mysqli_set_charset($conn, "utf8");
         
         // Lấy role của user

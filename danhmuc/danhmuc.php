@@ -11,7 +11,8 @@
     <h2 align = "center"><a href="../trangchu.php">Trang chủ</a></h2>
     <?php
         include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
-        require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');;
+        require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+        include "../header.php";
         $sql_select = "Select * from `danhmuc`";
         $result = mysqli_query($conn,$sql_select);
         $tong_bg=mysqli_num_rows($result);
