@@ -1,6 +1,6 @@
 <?php
-include($_SERVER['DOCUMENT_ROOT'] . '/Test1/api/db.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/Test1/api/db.php');;
+include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');;
 include "../header.php";
 session_start();
 
