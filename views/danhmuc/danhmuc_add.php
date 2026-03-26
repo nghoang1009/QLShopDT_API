@@ -10,6 +10,8 @@
     <h1 align="center">THÊM DANH MỤC</h1>
     
     <?php
+    include "api_helper.php";
+    
     $thongbao = "";
     
     // Xử lý khi submit form
@@ -17,22 +19,10 @@
         $tendm = $_POST['txt_tendm'] ?? '';
         
         // Gọi API để thêm danh mục
-        $post_data = json_encode([
+        $result = callDanhmucAPI([
             "action" => "add",
             "tendm" => $tendm
         ]);
-        
-        $api_url = "http://localhost/QLShopDT_API/api/danhmuc_api.php";
-        $options = [
-            "http" => [
-                "method"  => "POST",
-                "header"  => "Content-Type: application/json",
-                "content" => $post_data
-            ]
-        ];
-        $context = stream_context_create($options);
-        $response = file_get_contents($api_url, false, $context);
-        $result = json_decode($response, true);
         
         if($result && $result['status']) {
             header("Location: danhmuc.php");

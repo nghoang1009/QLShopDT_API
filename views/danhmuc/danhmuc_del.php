@@ -7,25 +7,15 @@
 </head>
 <body>
     <?php
+    include "api_helper.php";
+    
     $madm = $_GET['madm'] ?? 0;
     
     // Gọi API để xóa danh mục
-    $post_data = json_encode([
+    $result = callDanhmucAPI([
         "action" => "delete",
         "madm" => $madm
     ]);
-    
-    $api_url = "http://localhost/QLShopDT_API/api/danhmuc_api.php";
-    $options = [
-        "http" => [
-            "method"  => "POST",
-            "header"  => "Content-Type: application/json",
-            "content" => $post_data
-        ]
-    ];
-    $context = stream_context_create($options);
-    $response = file_get_contents($api_url, false, $context);
-    $result = json_decode($response, true);
     
     if($result && $result['status']) {
         header("Location: danhmuc.php");

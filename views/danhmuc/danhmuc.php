@@ -9,21 +9,10 @@
 <body>
     <?php
         include "../../includes/header.php";
+        include "api_helper.php";
         
         // Gọi API lấy danh sách danh mục
-        $post_data = json_encode(['action' => 'getall']);
-        
-        $api_url = "http://localhost/QLShopDT_API/api/danhmuc_api.php";
-        $options = [
-            "http" => [
-                "method"  => "POST",
-                "header"  => "Content-Type: application/json",
-                "content" => $post_data
-            ]
-        ];
-        $context = stream_context_create($options);
-        $response = file_get_contents($api_url, false, $context);
-        $result = json_decode($response, true);
+        $result = callDanhmucAPI(['action' => 'getall']);
         
         $categories = ($result && $result['status']) ? $result['data'] : [];
         $tong_bg = count($categories);

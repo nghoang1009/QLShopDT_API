@@ -10,6 +10,8 @@
     <h1 align="center">SỬA DANH MỤC</h1>
     
     <?php
+    include "api_helper.php";
+    
     $madm = $_GET['madm'] ?? $_POST['madm'] ?? 0;
     $thongbao = "";
     
@@ -18,23 +20,11 @@
         $tendm = $_POST['txt_tendm'] ?? '';
         
         // Gọi API để cập nhật danh mục
-        $post_data = json_encode([
+        $result = callDanhmucAPI([
             "action" => "update",
             "madm" => $madm,
             "tendm" => $tendm
         ]);
-        
-        $api_url = "http://localhost/QLShopDT_API/api/danhmuc_api.php";
-        $options = [
-            "http" => [
-                "method"  => "POST",
-                "header"  => "Content-Type: application/json",
-                "content" => $post_data
-            ]
-        ];
-        $context = stream_context_create($options);
-        $response = file_get_contents($api_url, false, $context);
-        $result = json_decode($response, true);
         
         if($result && $result['status']) {
             header("Location: danhmuc.php");
@@ -45,22 +35,10 @@
     }
     
     // Lấy thông tin danh mục để hiển thị form
-    $post_data = json_encode([
+    $result = callDanhmucAPI([
         "action" => "getone",
         "madm" => $madm
     ]);
-    
-    $api_url = "http://localhost/QLShopDT_API/api/danhmuc_api.php";
-    $options = [
-        "http" => [
-            "method"  => "POST",
-            "header"  => "Content-Type: application/json",
-            "content" => $post_data
-        ]
-    ];
-    $context = stream_context_create($options);
-    $response = file_get_contents($api_url, false, $context);
-    $result = json_decode($response, true);
     
     if($result && $result['status']) {
         $category = $result['data'];
