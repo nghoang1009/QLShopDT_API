@@ -28,7 +28,6 @@ $row = mysqli_fetch_assoc($result);
 <head>
     <meta charset="UTF-8">
     <title>Sửa thanh toán</title>
-    <link rel="stylesheet" href="../../assets/css/nv.css">
 </head>
 <body>
     <h1 align="center">SỬA THANH TOÁN</h1>

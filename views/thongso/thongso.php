@@ -25,7 +25,6 @@ $isAdminOrStaff = ($role == 1 || $role == 2);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../assets/css/nv.css">
     <title>Thông số sản phẩm</title>
 </head>
 <body>

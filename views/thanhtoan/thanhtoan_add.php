@@ -30,7 +30,6 @@ $result_dh = mysqli_query($conn, $sql_dh);
 <head>
     <meta charset="UTF-8">
     <title>Thêm thanh toán</title>
-    <link rel="stylesheet" href="../../assets/css/nv.css">
 </head>
 <body>
     <h1 align="center">THÊM THANH TOÁN</h1>

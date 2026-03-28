@@ -142,6 +142,3 @@ $base_url = '/QLShopDT_API';
 <a href="/QLShopDT_API/views/giohang/giohang.php" class="ps-cart-fab">
     <i class="fa fa-shopping-cart"></i>
 </a>
-
-</body>
-</html>

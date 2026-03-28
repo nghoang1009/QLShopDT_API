@@ -22,20 +22,10 @@ curl_close($ch);
 $result = json_decode($response, true);
 $sanpham_list = ($result && $result['status']) ? $result['data'] : [];
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../assets/css/nv.css">
-    <link rel="stylesheet" href="../../assets/css/main.css">
-    <title>Sản phẩm</title>
-</head>
-<body>
-    <br>
-    <h1 align="center">DANH SÁCH SẢN PHẨM</h1>
 
-    <table width="1300" align="center" border="1">
+<h1 align="center">DANH SÁCH SẢN PHẨM</h1>
+
+<table width="1300" align="center" border="1">
         <tr>
             <th>STT</th>
             <th width="250">Tên sản phẩm</th>
@@ -82,5 +72,6 @@ $sanpham_list = ($result && $result['status']) ? $result['data'] : [];
             </td>
         </tr>
     </table>
+
 </body>
 </html>

@@ -1,25 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../../assets/css/nv.css">
-    <title>Khách hàng</title>
-</head>
-<body>
-    <?php
-        include "../../includes/header.php";
-        include "../../includes/api_helper.php";
+<?php
+session_start();
+if (!isset($_SESSION['username'])) {
+    header("Location: ../login.php");
+    exit();
+}
 
-        // Gọi API lấy danh sách khách hàng
-        $result = callKhachhangAPI(['action' => 'getall']);
+$page_title = 'Quản lý Khách hàng';
+$active_nav = 'khachhang';
+include "../../includes/header.php";
+include "../../includes/api_helper.php";
 
-        $customers = ($result && $result['status']) ? $result['data'] : [];
-        $tong_bg   = count($customers);
-    ?>
-    <br>
-    <h1 align="center">DANH SÁCH KHÁCH HÀNG</h1>
-    <table width="1300" align="center" border="1">
+// Gọi API lấy danh sách khách hàng
+$result = callKhachhangAPI(['action' => 'getall']);
+
+$customers = ($result && $result['status']) ? $result['data'] : [];
+$tong_bg   = count($customers);
+?>
+
+<h1 align="center">DANH SÁCH KHÁCH HÀNG</h1>
+<table width="1300" align="center" border="1">
         <tr>
             <th>STT</th>
             <th>Tên khách hàng</th>
@@ -46,5 +45,6 @@
             <td colspan="5" align="right">Bảng có <?php echo $tong_bg; ?> khách hàng</td>
         </tr>
     </table>
+
 </body>
 </html>
