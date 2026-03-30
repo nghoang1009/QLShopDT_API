@@ -11,9 +11,13 @@ session_start();
 <body>
     
     <?php
+        $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+        include "../../includes/footer.php";
         include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         include "../../includes/header.php";
+
+
         if (!isset($_SESSION['username'])) {
             echo "<p align='center'>Vui lòng <a href='../login.php'>đăng nhập</a> để xem thông tin vận chuyển</p>";
             exit();

@@ -16,8 +16,11 @@ if (!isset($_SESSION['username'])) {
 </head>
 <body>
     <?php
+    $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+    
     include "../../includes/header.php";
     include "../../includes/api_helper.php";
+    include "../../includes/footer.php";
 
     $masp = $_GET['masp'] ?? $_REQUEST['masp'] ?? '';
 

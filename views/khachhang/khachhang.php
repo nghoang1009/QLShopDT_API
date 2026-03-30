@@ -4,10 +4,11 @@ if (!isset($_SESSION['username'])) {
     header("Location: ../login.php");
     exit();
 }
-
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
 $page_title = 'Quản lý Khách hàng';
 $active_nav = 'khachhang';
 include "../../includes/header.php";
+include "../../includes/footer.php";
 include "../../includes/api_helper.php";
 
 // Gọi API lấy danh sách khách hàng
@@ -16,7 +17,9 @@ $result = callKhachhangAPI(['action' => 'getall']);
 $customers = ($result && $result['status']) ? $result['data'] : [];
 $tong_bg   = count($customers);
 ?>
-
+<html>
+    <link rel="stylesheet" href="/QLShopDT_API/assets/css/sanpham.css">;
+</html>
 <h1 align="center">DANH SÁCH KHÁCH HÀNG</h1>
 <table width="1300" align="center" border="1">
         <tr>

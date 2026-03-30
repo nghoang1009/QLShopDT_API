@@ -15,10 +15,11 @@ session_start();
             echo "<p align='center'>Vui lòng <a href='../login.php'>đăng nhập</a> để xem đơn hàng</p>";
             exit();
         }
-
+        $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
         include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         include "../../includes/header.php";
+        include "../../includes/footer.php";
         mysqli_set_charset($conn, "utf8");
         
         // Lấy role của user

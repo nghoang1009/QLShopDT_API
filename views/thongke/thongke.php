@@ -5,12 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../../assets/css/main.css">
     <title>Thống kê doanh thu</title>
+    <html>
+    <link rel="stylesheet" href="/QLShopDT_API/assets/css/sanpham.css">;
+</html>
 </head>
 <body>
     <?php
+    $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
     include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
     require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
     include "../../includes/header.php";
+    include "../../includes/footer.php";
 
     $sql_select = "SELECT tt.*, dh.ngaydat, kh.tenkh, nv.tennv 
                    FROM thanhtoan tt

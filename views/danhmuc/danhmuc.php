@@ -7,8 +7,9 @@ if (!isset($_SESSION['username'])) {
 
 $page_title = 'Quản lý Danh mục';
 $active_nav = 'danhmuc';
-$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/danhmuc.css">';
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
 include "../../includes/header.php";
+include "../../includes/footer.php";
 include "../../includes/api_helper.php";
 
 // Gọi API lấy danh sách danh mục
@@ -18,6 +19,9 @@ $categories = ($result && $result['status']) ? $result['data'] : [];
 $tong_bg = count($categories);
 ?>
 
+<html>
+    <link rel="stylesheet" href="/QLShopDT_API/assets/css/danhmuc.css">;
+</html>
 <h1>QUẢN LÝ DANH MỤC</h1>
 
 <table>

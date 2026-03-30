@@ -21,9 +21,11 @@ if ($role != 1) {
     exit();
 }
 
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
 $page_title = 'Quản lý Nhân viên';
 $active_nav = 'nhanvien';
 include "../../includes/header.php";
+include "../../includes/footer.php";
 
 // Lấy danh sách nhân viên
 $sql_select = "SELECT * FROM `nhanvien`";
@@ -31,7 +33,9 @@ $result = mysqli_query($conn, $sql_select);
 $employees = mysqli_fetch_all($result, MYSQLI_ASSOC);
 $tong_bg = count($employees);
 ?>
-
+<html>
+    <link rel="stylesheet" href="/QLShopDT_API/assets/css/sanpham.css">;
+</html>
 <h1 align="center">QUẢN LÝ NHÂN VIÊN</h1>
 
 <table width="1300" align="center" border="1">

@@ -1,0 +1,407 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+
+/* ===== BIẾN MÀU (kế thừa từ danhmuc) ===== */
+:root {
+    --dm-primary:  #1a1a2e;
+    --dm-accent:   #e94560;
+    --dm-accent2:  #f5a623;
+    --dm-surface:  #f8f7f4;
+    --dm-card:     #ffffff;
+    --dm-text:     #1a1a2e;
+    --dm-muted:    #7a7a8a;
+    --dm-border:   rgba(0,0,0,0.08);
+    --dm-success:  #10b981;
+    --dm-radius:   10px;
+    --dm-shadow:   0 8px 28px rgba(0,0,0,0.09);
+}
+
+/* ===== BASE ===== */
+body {
+    background: var(--dm-surface);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: var(--dm-text);
+    line-height: 1.6;
+    padding-bottom: 60px;
+}
+
+/* ===== TIÊU ĐỀ TRANG ===== */
+h1 {
+    text-align: center;
+    color: var(--dm-primary);
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 40px 0 32px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    position: relative;
+}
+
+h1::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: var(--dm-accent);
+    margin: 16px auto 0;
+    border-radius: 2px;
+}
+
+/* ===== BẢNG SẢN PHẨM ===== */
+table {
+    max-width: 1400px;
+    width: calc(100% - 48px);
+    margin: 0 auto 40px;
+    background: var(--dm-card);
+    border-radius: var(--dm-radius);
+    box-shadow: var(--dm-shadow);
+    border-collapse: separate;
+    border-spacing: 0;
+    overflow: hidden;
+    border: none !important;
+}
+
+/* --- Header --- */
+/* Hỗ trợ cả trường hợp có <thead> và không có <thead> */
+table thead tr,
+table tr:has(th) {
+    background: linear-gradient(135deg, var(--dm-primary) 0%, #2d2d44 100%);
+}
+
+table th {
+    padding: 18px 14px;
+    color: #ffffff !important;   /* bắt buộc trắng dù không có thead */
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-align: center;
+    border: none !important;
+    white-space: nowrap;
+    background: transparent;     /* màu nền lấy từ tr cha */
+}
+
+table th:first-child { border-top-left-radius:  var(--dm-radius); }
+table th:last-child  { border-top-right-radius: var(--dm-radius); }
+
+/* Nút "Thêm sản phẩm" trong <th> */
+table th a {
+    color: #ffffff;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--dm-accent);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px rgba(233, 69, 96, 0.3);
+    white-space: nowrap;
+}
+
+table th a:hover {
+    background: #c73652;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(233, 69, 96, 0.45);
+}
+
+/* --- Rows --- */
+table tr:not(:has(th)) {
+    border-bottom: 1px solid var(--dm-border);
+    transition: background 0.2s ease, transform 0.2s ease;
+    animation: fadeIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+table tr:not(:has(th)):hover {
+    background: rgba(233, 69, 96, 0.03);
+    transform: translateX(4px);
+}
+
+/* Hàng header KHÔNG hover, KHÔNG animation */
+table tr:has(th) {
+    animation: none !important;
+    opacity: 1 !important;
+    background: linear-gradient(135deg, var(--dm-primary) 0%, #2d2d44 100%) !important;
+}
+
+table tr:has(th):hover {
+    background: linear-gradient(135deg, var(--dm-primary) 0%, #2d2d44 100%) !important;
+    transform: none !important;
+}
+
+table tr:not(:has(th)):last-child { border-bottom: none; }
+
+table tr:not(:has(th)):nth-child(2) { animation-delay: 0.05s; }
+table tr:not(:has(th)):nth-child(3) { animation-delay: 0.10s; }
+table tr:not(:has(th)):nth-child(4) { animation-delay: 0.15s; }
+table tr:not(:has(th)):nth-child(5) { animation-delay: 0.20s; }
+table tr:not(:has(th)):nth-child(6) { animation-delay: 0.25s; }
+table tr:not(:has(th)):nth-child(n+7) { animation-delay: 0.30s; }
+
+/* --- Cells --- */
+table td {
+    padding: 14px 12px;
+    font-size: 13px;
+    text-align: center;
+    border: none !important;
+    vertical-align: middle;
+}
+
+/* STT */
+table td:nth-child(1),
+table th:nth-child(1) {
+    width: 50px;
+    font-weight: 700;
+    color: var(--dm-accent);
+    font-size: 14px;
+}
+
+/* Tên sản phẩm */
+table td:nth-child(2),
+table th:nth-child(2) {
+    text-align: left;
+    min-width: 180px;
+}
+
+table td:nth-child(2) {
+    font-weight: 600;
+    color: var(--dm-text);
+    font-size: 14px;
+}
+
+/* Giá */
+table td:nth-child(3),
+table th:nth-child(3) {
+    width: 120px;
+    white-space: nowrap;
+}
+
+table td:nth-child(3) {
+    color: var(--dm-accent);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+/* Số lượng */
+table td:nth-child(4),
+table th:nth-child(4) { width: 80px; }
+
+table td:nth-child(4) {
+    font-weight: 600;
+    color: var(--dm-success);
+}
+
+/* Hãng */
+table td:nth-child(5),
+table th:nth-child(5) { width: 100px; }
+
+/* Bảo hành */
+table td:nth-child(6),
+table th:nth-child(6) { width: 90px; }
+
+table td:nth-child(6) {
+    color: var(--dm-muted);
+    font-size: 12px;
+}
+
+/* Hình ảnh */
+table td:nth-child(7),
+table th:nth-child(7) { width: 80px; }
+
+table td:nth-child(7) img {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid var(--dm-border);
+    transition: transform 0.2s ease;
+}
+
+table td:nth-child(7) img:hover {
+    transform: scale(1.1);
+    box-shadow: var(--dm-shadow);
+}
+
+/* Ghi chú */
+table td:nth-child(8),
+table th:nth-child(8) {
+    max-width: 160px;
+    text-align: left;
+    color: var(--dm-muted);
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Danh mục */
+table td:nth-child(9),
+table th:nth-child(9) { width: 120px; }
+
+table td:nth-child(9) {
+    font-size: 12px;
+}
+
+/* Badge danh mục */
+.sp-badge-dm {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(26, 26, 46, 0.08);
+    color: var(--dm-primary);
+    white-space: nowrap;
+}
+
+/* Cột Thao tác */
+table td:nth-child(10),
+table th:nth-child(10) {
+    width: 160px;
+    white-space: nowrap;
+}
+
+table td:nth-child(10) a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    margin: 2px;
+}
+
+table td a[href*="edit"] {
+    background: #3b82f6;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+}
+
+table td a[href*="edit"]:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+}
+
+table td a[href*="del"] {
+    background: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(239,68,68,0.25);
+}
+
+table td a[href*="del"]:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239,68,68,0.35);
+}
+
+/* Cột Thông số */
+table td:nth-child(11),
+table th:nth-child(11) {
+    width: 120px;
+    white-space: nowrap;
+}
+
+table td a[href*="thongso"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+    background: var(--dm-accent2);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(245,166,35,0.25);
+    transition: all 0.2s ease;
+}
+
+table td a[href*="thongso"]:hover {
+    background: #d4891a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245,166,35,0.35);
+}
+
+/* --- Footer tổng số --- */
+table tfoot tr {
+    background: var(--dm-surface);
+    border-top: 2px solid var(--dm-border);
+}
+
+table tfoot td {
+    padding: 16px 20px;
+    font-weight: 700;
+    color: var(--dm-primary);
+    font-size: 14px;
+    text-align: right;
+}
+
+/* ===== TRẠNG THÁI RỖNG ===== */
+.sp-empty-state {
+    text-align: center !important;
+    padding: 50px 20px !important;
+    color: var(--dm-muted) !important;
+}
+
+.sp-empty-state strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: var(--dm-text);
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar       { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--dm-surface); }
+::-webkit-scrollbar-thumb { background: var(--dm-muted); border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: var(--dm-primary); }
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1024px) {
+    table {
+        width: calc(100% - 24px);
+        margin: 0 12px 40px;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 768px) {
+    h1 { font-size: 1.8rem; margin: 24px 0 20px; }
+
+    table th,
+    table td { padding: 10px 8px; font-size: 12px; }
+
+    table th a { padding: 6px 10px; font-size: 11px; }
+
+    table td:nth-child(7) img { width: 40px; height: 40px; }
+
+    table td:nth-child(8) { max-width: 100px; }
+
+    table td:nth-child(10) {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: center;
+    }
+
+    table td:nth-child(10) a,
+    table td a[href*="thongso"] {
+        width: 100%;
+        justify-content: center;
+        margin: 0;
+    }
+}

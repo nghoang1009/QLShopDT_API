@@ -1,7 +1,9 @@
 <?php
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
 include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
 require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
 include "../../includes/header.php";
+require_once "../../includes/footer.php";
 session_start();
 if (!isset($_SESSION['username'])) {
     header("Location: ../login.php");
@@ -23,6 +25,9 @@ $isAdminOrStaff = ($role == 1 || $role == 2);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý thanh toán</title>
+    <html>
+    <link rel="stylesheet" href="/QLShopDT_API/assets/css/sanpham.css">;
+</html>
 </head>
 <body>
     <h1 align="center">QUẢN LÝ THANH TOÁN</h1>

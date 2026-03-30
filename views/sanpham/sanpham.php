@@ -7,22 +7,21 @@ if (!isset($_SESSION['username'])) {
 
 $page_title = 'Quản lý Sản phẩm';
 $active_nav = 'sanpham';
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
 include "../../includes/header.php";
 include "../../includes/api_helper.php";
+include "../../includes/footer.php";
 
 // Gọi RESTful API lấy danh sách sản phẩm
 $api_url = "http://localhost/QLShopDT_API/api/sanpham";
 
-$ch = curl_init($api_url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-$response = curl_exec($ch);
-curl_close($ch);
-
-$result = json_decode($response, true);
+//Gọi API lấy danh sách sản phẩm
+$result = callSanphamAPI(['action' => 'getall']);
 $sanpham_list = ($result && $result['status']) ? $result['data'] : [];
 ?>
-
+<html>
+    <link rel="stylesheet" href="/QLShopDT_API/assets/css/sanpham.css">;
+</html>
 <h1 align="center">DANH SÁCH SẢN PHẨM</h1>
 
 <table width="1300" align="center" border="1">

@@ -7,12 +7,14 @@ session_start();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Giỏ hàng</title>
+    <link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">;
 </head>
 <body>
     <?php
         include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         include "../../includes/header.php";
+        include "../../includes/footer.php";
         if (!isset($_SESSION['username'])) {
             echo "<p align='center'>Vui lòng <a href='../login.php'>đăng nhập</a> để xem giỏ hàng</p>";
             exit();
