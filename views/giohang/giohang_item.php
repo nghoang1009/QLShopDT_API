@@ -4,7 +4,7 @@ require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
 session_start();
 
 if (!isset($_SESSION['username'])) {
-    header("Location: login.php");
+    header("Location: ../login.php");
     exit();
 }
 
