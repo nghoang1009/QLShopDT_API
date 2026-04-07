@@ -79,9 +79,10 @@ $base_url = '/QLShopDT_API';
         <div class="ps-user-actions">
             <?php if (isset($_SESSION['username'])): ?>
                 <div class="ps-avatar-wrap">
-                    <div class="ps-avatar">
+                    <input type="checkbox" id="ps-dropdown-toggle" class="ps-dropdown-toggle">
+                    <label for="ps-dropdown-toggle" class="ps-avatar">
                         <?php echo strtoupper(substr($_SESSION['username'], 0, 1)); ?>
-                    </div>
+                    </label>
                     <div class="ps-dropdown">
                         <div class="ps-dropdown-info">
                             <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>

@@ -145,7 +145,13 @@ button, input, select, textarea { font-family: inherit; }
     cursor: pointer;
     user-select: none;
 }
-.ps-avatar-wrap:hover .ps-dropdown { display: block; }
+        
+.ps-dropdown-toggle {
+    display: none;
+}
+.ps-dropdown-toggle:checked ~ .ps-dropdown {
+    display: block;
+}
 
 .ps-dropdown {
     display: none;
