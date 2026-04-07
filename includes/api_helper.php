@@ -5,6 +5,9 @@ define('KHACHHANG_API_URL','http://localhost/QLShopDT_API/api/khachhang_api.php'
 define('THONGSO_API_URL',  'http://localhost/QLShopDT_API/api/thongso_api.php');
 define('SEARCH_API_URL',   'http://localhost/QLShopDT_API/api/search_api.php');
 define('GIOHANG_API_URL',   'http://localhost/QLShopDT_API/api/giohang_api.php');
+define('NHANVIEN_API_URL',   'http://localhost/QLShopDT_API/api/nhanvien_api.php');
+define('PROFILE_API_URL',  'http://localhost/QLShopDT_API/api/profile_api.php');
+
 
 /**
  * Hàm gọi API chung qua POST (JSON body)
@@ -50,12 +53,16 @@ function callSearchAPI($data) {
     return callAPI(SEARCH_API_URL, $data);
 }
 
-/**
- * Gọi API giỏ hàng
- * @param array $data - Associative Array với dữ liệu cần gửi
- * @return array|null  - Kết quả trả về từ API, null nếu lỗi
-*/
+function callNhanVienAPI($data) {
+    return callAPI(NHANVIEN_API_URL, $data);
+}
+
 function callGioHangAPI($data) {
     return callAPI(GIOHANG_API_URL, $data);
+}
+
+/** Gọi API profile */
+function callProfileAPI($data) {
+    return callAPI(PROFILE_API_URL, $data);
 }
 ?>

@@ -1,87 +1,102 @@
 <?php
-include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
 session_start();
-
-// Kiểm tra đăng nhập
 if (!isset($_SESSION['username'])) {
     header("Location: ../login.php");
     exit();
 }
 
-// Kiểm tra quyền - Chỉ Admin
-$username = $_SESSION['username'];
-$sql_role = "SELECT role FROM taikhoan WHERE tentk = '$username'";
-$result_role = mysqli_query($conn, $sql_role);
-$row_role = mysqli_fetch_assoc($result_role);
-$role = $row_role['role'];
+$page_title = 'Sửa nhân viên';
+$active_nav = 'nhanvien';
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/danhmuc.css">';
+include "../../includes/header.php";
+include "../../includes/api_helper.php";
 
-if ($role != 1) {
-    echo "<script>alert('Bạn không có quyền sửa nhân viên!'); window.location.href='nhanvien.php';</script>";
+$manv = $_GET['manv'] ?? $_POST['manv'] ?? 0;
+$thongbao = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $result = callNhanvienAPI([
+        "action" => "update",
+        "manv" => $manv,
+        "tennv" => $_POST['txt_tennv'] ?? '',
+        "diachi" => $_POST['txt_diachi'] ?? '',
+        "sdt" => $_POST['txt_sdt'] ?? '',
+        "ns" => $_POST['date_ns'] ?? ''
+    ]);
+    
+    if ($result && $result['status']) {
+        header("Location: nhanvien.php");
+        exit();
+    }
+    $thongbao = "Lỗi: " . ($result['message'] ?? 'Không xác định');
+}
+
+$result = callNhanvienAPI(["action" => "getone", "manv" => $manv]);
+
+if ($result && $result['status']) {
+    $tennv = $result['data']['tennv'];
+    $diachi = $result['data']['diachi'];
+    $sdt = $result['data']['sdt'];
+    $ns = $result['data']['ns'];
+} else {
+    echo '<div class="dm-error-box">';
+    echo '<p class="dm-error-title">Không tìm thấy nhân viên</p>';
+    echo '<a href="nhanvien.php" class="dm-link-back">Quay lại danh sách</a>';
+    echo '</div></body></html>';
     exit();
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sửa nhân viên</title>
-</head>
-<body>
-    <h1 align="center">SỬA NHÂN VIÊN</h1>
-    <?php
-        $manv = $_REQUEST["manv"];
-        
-        mysqli_select_db($conn, "qlshopdienthoai") or die("Không tìm thấy CSDL");
-        $sql_select = "SELECT * FROM `nhanvien` WHERE `manv` = '$manv'";
-        $result = mysqli_query($conn, $sql_select);
-        $row = mysqli_fetch_object($result);
 
-        $manv = $row->manv;
-        $tennv = $row->tennv;
-        $diachi = $row->diachi;
-        $sdt = $row->sdt;
-        $ns = $row->ns;
-    ?>
+<h1>SỬA NHÂN VIÊN</h1>
 
-    <form method="post" action="nhanvien_edit_save.php?manv=<?php echo $manv; ?>" enctype="multipart/form-data">        
-        <table border="1" align="center">
-            <tr>
-                <td colspan="2" align="center">Thông tin nhân viên</td>
-            </tr>
-            <tr>
-                <td>Tên nhân viên:</td>
-                <td>
-                    <input type="text" name="txt_tennv" value="<?php echo $tennv; ?>">
-                </td>
-            </tr>
-            <tr>
-                <td>Địa chỉ:</td>
-                <td>
-                    <input type="text" name="txt_diachi" value="<?php echo $diachi; ?>">
-                </td>
-            </tr>
-            <tr>
-                <td>Ngày sinh:</td>
-                <td>
-                    <input type="date" name="date_ns" value="<?php echo $ns; ?>">
-                </td>
-            </tr>
-            <tr>
-                <td>Số điện thoại:</td>
-                <td>
-                    <input type="text" name="txt_sdt" value="<?php echo $sdt; ?>">
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" align="center">
-                <input type="submit" value="OK">
-                <input type="reset" value="Reset">
-                <input type="button" value="Quay lại" onclick="window.location.href='nhanvien.php'">
-                </td>
-            </tr>
-        </table>
-    </form>
+<?php if($thongbao): ?>
+    <div class="dm-alert-error">
+        <?php echo htmlspecialchars($thongbao); ?>
+    </div>
+<?php endif; ?>
+
+<form method="POST" action="" class="dm-form">
+    <input type="hidden" name="manv" value="<?php echo $manv; ?>">
+    
+    <div class="dm-id-badge">
+        <small>Mã nhân viên</small>
+        <strong>#<?php echo htmlspecialchars($manv); ?></strong>
+    </div>
+    
+    <div class="dm-form-group">
+        <label for="txt_tennv" class="dm-label">
+            Tên nhân viên <span class="dm-required">*</span>
+        </label>
+        <input type="text" id="txt_tennv" name="txt_tennv" value="<?php echo htmlspecialchars($tennv); ?>" class="dm-input" required>
+    </div>
+    
+    <div class="dm-form-group">
+        <label for="txt_diachi" class="dm-label">
+            Địa chỉ
+        </label>
+        <input type="text" id="txt_diachi" name="txt_diachi" value="<?php echo htmlspecialchars($diachi); ?>" class="dm-input">
+    </div>
+    
+    <div class="dm-form-group">
+        <label for="date_ns" class="dm-label">
+            Ngày sinh
+        </label>
+        <input type="date" id="date_ns" name="date_ns" value="<?php echo htmlspecialchars($ns); ?>" class="dm-input">
+    </div>
+    
+    <div class="dm-form-group">
+        <label for="txt_sdt" class="dm-label">
+            Số điện thoại
+        </label>
+        <input type="text" id="txt_sdt" name="txt_sdt" value="<?php echo htmlspecialchars($sdt); ?>" class="dm-input">
+    </div>
+    
+    <div class="dm-form-actions">
+        <button type="submit" class="dm-btn dm-btn-primary">Cập nhật</button>
+        <button type="reset" class="dm-btn dm-btn-secondary">Đặt lại</button>
+        <button type="button" onclick="location.href='nhanvien.php'" class="dm-btn dm-btn-default">Quay lại</button>
+    </div>
+</form>
+
 </body>
 </html>

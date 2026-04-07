@@ -26,11 +26,10 @@ $page_title = 'Quản lý Nhân viên';
 $active_nav = 'nhanvien';
 include "../../includes/header.php";
 include "../../includes/footer.php";
+include "../../model/nhanvien_model.php";
 
-// Lấy danh sách nhân viên
-$sql_select = "SELECT * FROM `nhanvien`";
-$result = mysqli_query($conn, $sql_select);
-$employees = mysqli_fetch_all($result, MYSQLI_ASSOC);
+// Lấy danh sách nhân viên từ model
+$employees = NhanVien::getAllEmployees();
 $tong_bg = count($employees);
 ?>
 <html>
