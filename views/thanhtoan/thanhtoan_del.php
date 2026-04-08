@@ -14,11 +14,7 @@
         header("Location: ../login.php");
         exit();
     }
-    $username = $_SESSION['username'];
-    $sql_role = "SELECT role FROM taikhoan WHERE tentk = '$username'";
-    $result_role = mysqli_query($conn, $sql_role);
-    $row_role = mysqli_fetch_assoc($result_role);
-    $role = $row_role['role'];
+    $role = $_SESSION['role'] ?? 0;
 
     if ($role != 1 && $role != 2) {
         echo "<script>alert('Bạn không có quyền!'); window.location.href='thanhtoan.php';</script>";

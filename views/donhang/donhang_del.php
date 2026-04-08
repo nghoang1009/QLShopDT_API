@@ -8,14 +8,11 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-$username = $_SESSION['username'];
 mysqli_set_charset($conn, "utf8");
 
-$sql_get_role = "SELECT role FROM taikhoan WHERE tentk = '$username'";
-$result_role = mysqli_query($conn, $sql_get_role);
-$row_role = mysqli_fetch_object($result_role);
+$role = $_SESSION['role'] ?? 0;
 
-if ($row_role->role == '0') {
+if ($role == '0') {
     echo "<p align='center'>Bạn không có quyền xóa đơn hàng!</p>";
     echo "<p align='center'><a href='donhang.php'>Quay lại</a></p>";
     exit();

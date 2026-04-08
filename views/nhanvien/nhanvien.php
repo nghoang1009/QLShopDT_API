@@ -8,11 +8,7 @@ if (!isset($_SESSION['username'])) {
 // Lấy thông tin role từ header (đã xử lý trong header.php)
 include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
 
-$username = $_SESSION['username'];
-$sql_role = "SELECT role FROM taikhoan WHERE tentk = '$username'";
-$result_role = mysqli_query($conn, $sql_role);
-$row_role = mysqli_fetch_assoc($result_role);
-$role = $row_role['role'];
+$role = $_SESSION['role'] ?? 0;
 
 // Chỉ Admin mới có quyền quản lý nhân viên
 if ($role != 1) {

@@ -10,13 +10,8 @@ if (!isset($_SESSION['username'])) {
     exit();
 }
 
-$username = $_SESSION['username'];
-$sql_role = "SELECT role FROM taikhoan WHERE tentk = '$username'";
-$result_role = mysqli_query($conn, $sql_role);
-$row_role = mysqli_fetch_assoc($result_role);
 $userid = $_SESSION['userid'];
-$role = $row_role['role'];
-
+$role = $_SESSION['role'] ?? 0;
 $isAdminOrStaff = ($role == 1 || $role == 2);
 ?>
 <!DOCTYPE html>

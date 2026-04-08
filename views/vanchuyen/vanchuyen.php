@@ -23,14 +23,9 @@ session_start();
             exit();
         }
 
-        $username = $_SESSION['username'];
         mysqli_set_charset($conn, "utf8");
         
-        // Lấy role của user
-        $sql_get_role = "SELECT role FROM taikhoan WHERE tentk = '$username'";
-        $result_role = mysqli_query($conn, $sql_get_role);
-        $row_role = mysqli_fetch_object($result_role);
-        $role = $row_role->role;
+        $role = $_SESSION['role'] ?? 0;
 
         // Nếu là khách hàng, chỉ xem vận chuyển của mình
         if ($role == '0') {

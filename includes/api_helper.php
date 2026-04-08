@@ -7,6 +7,7 @@ define('SEARCH_API_URL',   'http://localhost/QLShopDT_API/api/search_api.php');
 define('GIOHANG_API_URL',   'http://localhost/QLShopDT_API/api/giohang_api.php');
 define('NHANVIEN_API_URL',   'http://localhost/QLShopDT_API/api/nhanvien_api.php');
 define('PROFILE_API_URL',  'http://localhost/QLShopDT_API/api/profile_api.php');
+define('AUTH_API_URL',     'http://localhost/QLShopDT_API/api/auth_api.php');
 
 
 /**
@@ -64,5 +65,28 @@ function callGioHangAPI($data) {
 /** Gọi API profile */
 function callProfileAPI($data) {
     return callAPI(PROFILE_API_URL, $data);
+}
+
+function getCurrentRole() {
+    return isset($_SESSION['role']) ? (int)$_SESSION['role'] : null;
+}
+
+function isAdminOrStaff() {
+    $role = getCurrentRole();
+    return $role === 1 || $role === 2;
+}
+
+function requireLogin() {
+    if (!isset($_SESSION['username'])) {
+        header('Location: /QLShopDT_API/views/login.php');
+        exit();
+    }
+}
+
+function callAuthAPI($username, $password) {
+    return callAPI(AUTH_API_URL, [
+        'username' => $username,
+        'password' => $password
+    ]);
 }
 ?>

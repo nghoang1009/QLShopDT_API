@@ -15,6 +15,7 @@ session_start();
             echo "<p align='center'>Vui lòng <a href='../login.php'>đăng nhập</a> để xem đơn hàng</p>";
             exit();
         }
+        $username = $_SESSION['username'];
         $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
         include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
@@ -22,11 +23,7 @@ session_start();
         include "../../includes/footer.php";
         mysqli_set_charset($conn, "utf8");
         
-        // Lấy role của user
-        $sql_get_role = "SELECT role FROM taikhoan WHERE tentk = '$username'";
-        $result_role = mysqli_query($conn, $sql_get_role);
-        $row_role = mysqli_fetch_object($result_role);
-        $role = $row_role->role;
+        $role = $_SESSION['role'] ?? 0;
 
         // Nếu là khách hàng, chỉ xem đơn hàng của mình
         if ($role == '0') {

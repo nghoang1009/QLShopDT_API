@@ -26,10 +26,14 @@ if (!isset($conn)) {
 $role   = -1;
 $chucvu = '';
 if (isset($_SESSION['username'])) {
-    $u   = mysqli_real_escape_string($conn, $_SESSION['username']);
-    $res = mysqli_query($conn, "SELECT role FROM taikhoan WHERE tentk = '$u'");
-    if ($res && $r = mysqli_fetch_assoc($res))
-        $role = (int)$r['role'];
+    if (isset($_SESSION['role'])) {
+        $role = (int)$_SESSION['role'];
+    } else {
+        $u   = mysqli_real_escape_string($conn, $_SESSION['username']);
+        $res = mysqli_query($conn, "SELECT role FROM taikhoan WHERE tentk = '$u'");
+        if ($res && $r = mysqli_fetch_assoc($res))
+            $role = (int)$r['role'];
+    }
 
     switch ($role) {
         case 1: $chucvu = 'Admin';      break;
