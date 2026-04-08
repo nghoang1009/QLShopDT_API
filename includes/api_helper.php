@@ -8,6 +8,7 @@ define('GIOHANG_API_URL',   'http://localhost/QLShopDT_API/api/giohang_api.php')
 define('NHANVIEN_API_URL',   'http://localhost/QLShopDT_API/api/nhanvien_api.php');
 define('PROFILE_API_URL',  'http://localhost/QLShopDT_API/api/profile_api.php');
 define('AUTH_API_URL',     'http://localhost/QLShopDT_API/api/auth_api.php');
+define('REGISTER_API_URL', 'http://localhost/QLShopDT_API/api/register_api.php');
 
 
 /**
@@ -88,5 +89,9 @@ function callAuthAPI($username, $password) {
         'username' => $username,
         'password' => $password
     ]);
+}
+
+function callRegisterAPI($data) {
+    return callAPI(REGISTER_API_URL, $data);
 }
 ?>

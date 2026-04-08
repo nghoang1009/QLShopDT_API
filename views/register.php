@@ -4,50 +4,36 @@ session_start();
 $page_title = 'Đăng ký';
 $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/register.css">';
 
+require_once "../includes/api_helper.php";
 include "../includes/header.php";
 
 $error = "";
 $success = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
+    $username = trim($_POST['username']);
     $password = $_POST['password'];
     $confirm = $_POST['confirm_password'];
-    $name = mysqli_real_escape_string($conn, $_POST['name']);
-    $address = mysqli_real_escape_string($conn, $_POST['address']);
-    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
+    $name = trim($_POST['name']);
+    $address = trim($_POST['address']);
+    $phone = trim($_POST['phone']);
     
-    // Validate
-    if ($password !== $confirm) {
-        $error = "Mật khẩu xác nhận không khớp!";
+    $registerData = [
+        'username' => $username,
+        'password' => $password,
+        'confirm_password' => $confirm,
+        'name' => $name,
+        'address' => $address,
+        'phone' => $phone
+    ];
+    
+    $registerResponse = callRegisterAPI($registerData);
+    
+    if (!empty($registerResponse['status'])) {
+        $success = $registerResponse['message'] . " Đang chuyển đến trang đăng nhập...";
+        echo "<script>setTimeout(function(){ window.location.href='login.php'; }, 2000);</script>";
     } else {
-        // Kiểm tra username đã tồn tại chưa
-        $check = mysqli_query($conn, "SELECT tentk FROM taikhoan WHERE tentk = '$username'");
-        if (mysqli_num_rows($check) > 0) {
-            $error = "Tên đăng nhập đã tồn tại!";
-        } else {
-            // Tạo tài khoản (role = 0: khách hàng)
-            $sql = "INSERT INTO taikhoan (tentk, mk, role) VALUES ('$username', '$password', 0)";
-            if (mysqli_query($conn, $sql)) {
-                $matk = mysqli_insert_id($conn);
-                
-                // Tạo thông tin khách hàng
-                $sql2 = "INSERT INTO khachhang (makh, tenkh, diachi, sdt) 
-                         VALUES ($matk, '$name', '$address', '$phone')";
-                
-                if (mysqli_query($conn, $sql2)) {
-                    // Tạo giỏ hàng cho khách hàng
-                    mysqli_query($conn, "INSERT INTO giohang (makh) VALUES ($matk)");
-                    
-                    $success = "Đăng ký thành công! Đang chuyển đến trang đăng nhập...";
-                    echo "<script>setTimeout(function(){ window.location.href='login.php'; }, 2000);</script>";
-                } else {
-                    $error = "Lỗi khi tạo thông tin khách hàng!";
-                }
-            } else {
-                $error = "Lỗi khi tạo tài khoản!";
-            }
-        }
+        $error = $registerResponse['message'] ?? "Đăng ký thất bại!";
     }
 }
 ?>

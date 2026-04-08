@@ -4,74 +4,94 @@ header("Content-Type: application/json");
 // Kết nối database
 include "db.php";
 
-// Đọc dữ liệu từ frontend
-$data   = json_decode(file_get_contents("php://input"), true);
-$action = isset($data['action']) ? $data['action'] : '';
+// Chỉ chấp nhận POST với JSON body
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode([
+        "status" => false,
+        "message" => "Phương thức không hợp lệ"
+    ]);
+    $conn->close();
+    exit;
+}
 
-//  ĐĂNG KÝ
-if ($action == 'register') {
-    $tenkh   = $conn->real_escape_string($data['hoten'] ?? $data['tenkh'] ?? '');
-    $tentk   = $conn->real_escape_string($data['email'] ?? '');   // email sẽ thành tentk
-    $matkhau = $data['matkhau'] ?? '';
-    $sdt     = $conn->real_escape_string($data['sodienthoai'] ?? $data['sdt'] ?? '');
-    $diachi  = $conn->real_escape_string($data['diachi'] ?? '');
+$data = json_decode(file_get_contents("php://input"), true);
+$username = trim($data['username'] ?? '');
+$password = trim($data['password'] ?? '');
+$confirm = trim($data['confirm_password'] ?? '');
+$name = trim($data['name'] ?? '');
+$address = trim($data['address'] ?? '');
+$phone = trim($data['phone'] ?? '');
 
-    if (empty($tenkh) || empty($tentk) || empty($matkhau) || empty($sdt)) {
+if ($username === '' || $password === '' || $confirm === '' || $name === '') {
+    echo json_encode([
+        "status" => false,
+        "message" => "Tên đăng nhập, mật khẩu và họ tên là bắt buộc"
+    ]);
+    $conn->close();
+    exit;
+}
+
+if ($password !== $confirm) {
+    echo json_encode([
+        "status" => false,
+        "message" => "Mật khẩu xác nhận không khớp"
+    ]);
+    $conn->close();
+    exit;
+}
+
+// Kiểm tra username đã tồn tại
+$stmt = $conn->prepare("SELECT tentk FROM taikhoan WHERE tentk = ?");
+$stmt->bind_param('s', $username);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result && $result->num_rows > 0) {
+    echo json_encode([
+        "status" => false,
+        "message" => "Tên đăng nhập đã tồn tại"
+    ]);
+    $stmt->close();
+    $conn->close();
+    exit;
+}
+$stmt->close();
+
+// Tạo tài khoản
+$stmt = $conn->prepare("INSERT INTO taikhoan (tentk, mk, role) VALUES (?, ?, 0)");
+$stmt->bind_param('ss', $username, $password);
+
+if ($stmt->execute()) {
+    $matk = $conn->insert_id;
+    $stmt->close();
+
+    // Tạo thông tin khách hàng
+    $stmt2 = $conn->prepare("INSERT INTO khachhang (makh, tenkh, diachi, sdt) VALUES (?, ?, ?, ?)");
+    $stmt2->bind_param('isss', $matk, $name, $address, $phone);
+
+    if ($stmt2->execute()) {
+        $stmt2->close();
+
+        // Tạo giỏ hàng
+        $stmt3 = $conn->prepare("INSERT INTO giohang (makh) VALUES (?)");
+        $stmt3->bind_param('i', $matk);
+        $stmt3->execute();
+        $stmt3->close();
+
         echo json_encode([
-            "status"  => false,
-            "message" => "Vui lòng điền đầy đủ thông tin bắt buộc"
+            "status" => true,
+            "message" => "Đăng ký thành công"
         ]);
-        $conn->close();
-        exit;
-    }
-
-    // Kiểm tra tentk (email) đã tồn tại chưa
-    $check = "SELECT matk FROM taikhoan WHERE tentk = '$tentk'";
-    if ($conn->query($check)->num_rows > 0) {
-        echo json_encode([
-            "status"  => false,
-            "message" => "Email đã tồn tại"
-        ]);
-        $conn->close();
-        exit;
-    }
-
-    // Tạo tài khoản 
-    $sql_tk = "INSERT INTO taikhoan (tentk, matkhau, role) 
-               VALUES ('$tentk', '$matkhau', '0')";
-
-    if ($conn->query($sql_tk)) {
-        $makh = $conn->insert_id;
-
-        // Tạo thông tin khách hàng
-        $sql_kh = "INSERT INTO khachhang (makh, tenkh, diachi, sdt) 
-                   VALUES ('$makh', '$tenkh', '$diachi', '$sdt')";
-
-        if ($conn->query($sql_kh)) {
-            echo json_encode([
-                "status"  => true,
-                "message" => "Đăng ký thành công",
-                "data"    => ["makh" => $makh]
-            ]);
-        } else {
-            // Rollback nếu insert khachhang lỗi
-            $conn->query("DELETE FROM taikhoan WHERE matk = $makh");
-            echo json_encode([
-                "status"  => false,
-                "message" => "Lỗi thêm khách hàng: " . $conn->error
-            ]);
-        }
     } else {
         echo json_encode([
-            "status"  => false,
-            "message" => "Lỗi tạo tài khoản: " . $conn->error
+            "status" => false,
+            "message" => "Lỗi khi tạo thông tin khách hàng"
         ]);
     }
-} 
-else {
+} else {
     echo json_encode([
-        "status"  => false,
-        "message" => "Action không hợp lệ."
+        "status" => false,
+        "message" => "Lỗi khi tạo tài khoản"
     ]);
 }
 
