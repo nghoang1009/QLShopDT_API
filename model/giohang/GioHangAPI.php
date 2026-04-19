@@ -1,7 +1,7 @@
 <?php
-include_once "../../includes/api_helper.php";
+require $_SERVER['DOCUMENT_ROOT'] . "/QLShopDT_API/includes/api_helper.php";
 
-class GioHang {
+class GioHangAPI {
     /**
      * @return array - Trả về toàn bộ giỏ hàng có trong CSDL
      */
