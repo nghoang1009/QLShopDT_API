@@ -12,14 +12,15 @@ session_start();
 </head>
 <body>
     <?php
-        include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
         require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
-        include "../../includes/header.php";
-        include "../../includes/footer.php";
-        include "../../model/giohang.php";
+        require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/model/giohang/GioHang_db.php');
+        require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/model/giohang/GioHangAPI.php');
 
+        include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/includes/header.php');
+        include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/includes/footer.php');
+        
         if (!isset($_SESSION['username'])) {
-            echo "<p align='center'>Vui lòng <a href='../login.php'>đăng nhập</a> để xem giỏ hàng</p>";
+            echo "<p align='center'>Vui lòng <a href='/QLShopDT_API/views/login.php'>đăng nhập</a> để xem giỏ hàng</p>";
             exit();
         }
 
@@ -28,26 +29,16 @@ session_start();
         
         global $giohang, $tong_sp;
         if ($role == 0){
-            // Lấy mã khách hàng từ bảng khachhang thông qua taikhoan
-            $sql_get_user = "SELECT kh.makh 
-                            FROM taikhoan tk
-                            JOIN khachhang kh ON tk.matk = kh.makh
-                            WHERE tk.tentk = '$username'";
-            $result_user = mysqli_query($conn, $sql_get_user);
-            
-            if (!$result_user) {
-                die("Lỗi truy vấn: " . mysqli_error($conn));
-            }
-            
-            if (mysqli_num_rows($result_user) == 0) {
-                echo "<p align='center'>Không tìm thấy thông tin khách hàng. Bạn cần đăng ký thông tin khách hàng.</p>";
+            // Tìm mã khách hàng theo tên tài khoản
+            $makh = GioHang_db::timMaKH($username);
+        
+            if (!$makh) {
+                echo "Không tìm thấy thông tin khách hàng. Vui lòng đăng ký trước.";
+                echo "<br><a href='/QLShopDT_API/view/register.php'>Quay lại</a>";
                 exit();
             }
-            
-            $row_user = mysqli_fetch_object($result_user);
-            $makh = $row_user->makh;
 
-            $giohang = GioHang::getGioHang($makh);
+            $giohang = GioHangAPI::getGioHang($makh);
             
             if (!$giohang) {
                 die("Lỗi truy vấn sản phẩm: " . sizeof($giohang));
@@ -62,7 +53,7 @@ session_start();
             }
         }
         else {
-            $giohang = GioHang::getAllGioHang();
+            $giohang = GioHangAPI::getAllGioHang();
             $tong_sp = sizeof($giohang);
         }
     ?>
@@ -89,7 +80,7 @@ session_start();
         ?>
             <tr align="center">
                 <td><?php echo $i+1; ?></td>
-                <td><img src="../../includes/img/<?php echo $giohang[$i]["hinhanh"] ?>" width="80"></td>
+                <td><img src="/QLShopDT_API/includes/img/<?php echo $giohang[$i]["hinhanh"] ?>" width="80"></td>
                 <td><?php echo $giohang[$i]["tensp"]; ?></td>
                 <td><?php echo $giohang[$i]["hang"]; ?></td>
                 <td><?php echo number_format($giohang[$i]["gia"]); ?> VNĐ</td>
