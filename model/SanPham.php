@@ -77,7 +77,7 @@ class SanPham extends Model {
         $sql = "INSERT INTO sanpham (tensp, gia, sl, hang, baohanh, ghichu, hinhanh, madm) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         
-        return $this->db->insert($sql, 'sdisisssi', [
+        return $this->db->insert($sql, 'sdisissi', [
             $data['tensp'],
             $data['gia'],
             $data['sl'],
@@ -97,7 +97,7 @@ class SanPham extends Model {
                 SET tensp = ?, gia = ?, sl = ?, hang = ?, baohanh = ?, ghichu = ?, hinhanh = ?, madm = ? 
                 WHERE masp = ?";
         
-        return $this->db->execute($sql, 'sdisisssi', [
+        return $this->db->execute($sql, 'sdisissii', [
             $data['tensp'],
             $data['gia'],
             $data['sl'],
