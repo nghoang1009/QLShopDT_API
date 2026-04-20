@@ -43,7 +43,7 @@ include BASE_PATH . '/includes/footer.php';
 <div class="ps-filter-bar" id="products">
     <h2 class="ps-section-title" style="margin:0"><?php echo $sectionTitle; ?></h2>
 
-    <form method="GET" action="<?php echo BASE_URL; ?>/app.php/" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;">
+    <form method="GET" action="<?php echo $formAction ?? (BASE_URL . '/app.php/'); ?>" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;">
         <!-- Ô tìm kiếm từ khóa -->
         <input type="text"
                name="search"
@@ -68,7 +68,7 @@ include BASE_PATH . '/includes/footer.php';
         </button>
 
         <?php if ($search !== '' || ($madm !== '' && $madm != '0')): ?>
-            <a href="<?php echo BASE_URL; ?>/app.php/"
+            <a href="<?php echo $formAction ?? (BASE_URL . '/app.php/'); ?>"
                style="padding:8px 16px; border-radius:6px; background:#6c757d; color:#fff; text-decoration:none; font-weight:bold;">
                 ✕ Xóa lọc
             </a>

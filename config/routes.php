@@ -18,10 +18,19 @@ $router->post('/api/auth/login',    'AuthController@apiLogin');    // JSON login
 $router->post('/api/auth/register', 'AuthController@apiRegister'); // JSON register
 
 // ===================== WEB PAGES =====================
+$router->get('/sanpham',            'HomeController@sanpham');
 $router->get('/giohang',            'GioHangController@index');
+<<<<<<< HEAD
 $router->post('/giohang/update',    'GioHangController@update');    // Cập nhật số lượng
 $router->get('/giohang/remove/{masp}', 'GioHangController@remove');  // Xóa sản phẩm
 $router->get('/thanhtoan',          'ThanhToanController@index');
+=======
+$router->get('/thanhtoan',                  'ThanhToanController@index');
+$router->get('/thanhtoan/detail/{matt}',    'ThanhToanController@show');
+$router->get('/thanhtoan/edit/{matt}',      'ThanhToanController@edit');
+$router->post('/thanhtoan/update',          'ThanhToanController@update');
+$router->get('/thanhtoan/delete/{matt}',    'ThanhToanController@delete');
+>>>>>>> 5dc028ee173c6b826b5f2c582313ed3334004003
 $router->get('/thongke',            'ThongKeController@index');
 $router->get('/vanchuyen',          'VanChuyenController@index');
 
