@@ -5,8 +5,10 @@
  * Admin/Staff: tạo đơn từ form
  */
 
+require_once __DIR__ . '/../../includes/api_helper.php';
+
 // Biến từ controller
-$role = $role ?? 0;
+$role = $role ?? $_SESSION['role'] ?? 0;
 $cartItems = $cartItems ?? [];
 $total = $total ?? 0;
 $customer = $customer ?? null;
@@ -15,7 +17,7 @@ $customers = $customers ?? [];
 $extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/donhang.css">
 <link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
 
-include BASE_PATH . '/includes/header.php';
+include "../../includes/header.php";
 
 function fmtVnd($n) {
     return number_format((float)$n, 0, ',', '.') . ' ₫';
@@ -195,4 +197,4 @@ function fmtVnd($n) {
 
 </main>
 
-<?php include BASE_PATH . '/includes/footer.php'; ?>
+<?php include "../../includes/footer.php"; ?>
