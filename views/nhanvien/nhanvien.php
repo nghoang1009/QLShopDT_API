@@ -1,67 +1,106 @@
 <?php
+/**
+ * Quản lý Nhân viên - Danh sách
+ */
 session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../auth/login.php");
-    exit();
-}
+require_once "../../includes/api_helper.php";
 
-// Lấy thông tin role từ header (đã xử lý trong header.php)
-include "../../includes/api_helper.php";
+requireLogin();
+requireRole([1]);
 
-$role = $_SESSION['role'] ?? 0;
+$keyword  = trim($_GET['keyword'] ?? '');
+$params   = $keyword !== '' ? ['keyword' => $keyword] : [];
 
-// Chỉ Admin mới có quyền quản lý nhân viên
-if ($role != 1) {
-    echo "<h3 align='center' style='color:red;'>Bạn không có quyền truy cập chức năng này!</h3>";
-    echo "<p align='center'><a href='../trangchu.php'>Quay lại trang chủ</a></p>";
-    exit();
-}
+$result    = callAPI('GET', '/api/nhanvien', $params);
+$employees = ($result && $result['status']) ? $result['data'] : [];
+$tong_nv   = count($employees);
 
-$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+$success = getFlash('success');
+$error   = getFlash('error');
+
 $page_title = 'Quản lý Nhân viên';
 $active_nav = 'nhanvien';
+$extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/nhanvien.css">
+<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+
 include "../../includes/header.php";
-include "../../includes/footer.php";
-
-// Lấy danh sách nhân viên từ API
-$result = callNhanVienAPI(['action' => 'getall']);
-$employees = ($result && $result['status']) ? $result['data'] : [];
-$tong_bg = count($employees);
 ?>
-<html>
-    <link rel="stylesheet" href="/QLShopDT_API/assets/css/sanpham.css">
-</html>
-<h1 align="center">QUẢN LÝ NHÂN VIÊN</h1>
 
-<table width="1300" align="center" border="1">
-        <tr>
-            <th>STT</th>
-            <th width="250">Tên nhân viên</th>
-            <th>Địa chỉ</th>
-            <th>Số điện thoại</th>
-            <th>Ngày sinh</th>
-            <th><a href="nhanvien_add.php">Thêm nhân viên</a></th>
-        </tr>
+<main class="container">
 
-        <?php foreach ($employees as $i => $nv): ?>
-            <tr align="center">
-                <td><?php echo $i + 1; ?></td>
-                <td><?php echo htmlspecialchars($nv['tennv']); ?></td>
-                <td><?php echo htmlspecialchars($nv['diachi']); ?></td>
-                <td><?php echo htmlspecialchars($nv['sdt']); ?></td>
-                <td><?php echo htmlspecialchars($nv['ns']); ?></td>
-                <td> 
-                    <a href="nhanvien_edit.php?manv=<?php echo $nv['manv']; ?>">Sửa</a> |
-                    <a href="nhanvien_del.php?manv=<?php echo $nv['manv']; ?>" 
-                       onclick="return confirm('Bạn có chắc muốn xóa nhân viên này?')">Xóa</a>
+    <div class="nv-toolbar">
+        <h1>QUẢN LÝ NHÂN VIÊN</h1>
+
+        <form method="GET" action="nhanvien.php" class="nv-search">
+            <input type="text" name="keyword"
+                   placeholder="Tìm theo tên, SĐT..."
+                   value="<?= e($keyword) ?>">
+            <button type="submit">Tìm</button>
+            <?php if ($keyword !== ''): ?>
+                <a href="nhanvien.php" class="dm-btn dm-btn-default" style="padding:9px 14px; font-size:13px;">✕</a>
+            <?php endif; ?>
+        </form>
+
+        <a href="nhanvien_add.php" class="nv-add-btn">+ Thêm nhân viên</a>
+    </div>
+
+    <?php if ($success): ?>
+        <div class="alert alert-success"><?= e($success) ?></div>
+    <?php endif; ?>
+    <?php if ($error): ?>
+        <div class="alert alert-error"><?= e($error) ?></div>
+    <?php endif; ?>
+
+    <?php if ($keyword !== ''): ?>
+        <p style="margin-bottom:12px; color:var(--dm-muted); font-size:14px;">
+            Kết quả cho "<strong><?= e($keyword) ?></strong>": <?= $tong_nv ?> nhân viên
+        </p>
+    <?php endif; ?>
+
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Mã NV</th>
+                <th>Tên nhân viên</th>
+                <th>Số điện thoại</th>
+                <th>Ngày sinh</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if ($tong_nv > 0): ?>
+                <?php foreach ($employees as $i => $nv): ?>
+                    <tr>
+                        <td><?= $i + 1 ?></td>
+                        <td><?= e($nv['manv']) ?></td>
+                        <td style="text-align:left; font-weight:600;"><?= e($nv['tennv']) ?></td>
+                        <td><?= e($nv['sdt']) ?></td>
+                        <td><?= $nv['ns'] ? date('d/m/Y', strtotime($nv['ns'])) : '—' ?></td>
+                        <td>
+                            <a href="nhanvien_edit.php?manv=<?= e($nv['manv']) ?>">Sửa</a>
+                            <a href="nhanvien_del.php?manv=<?= e($nv['manv']) ?>"
+                               onclick="return confirm('Bạn có chắc muốn xóa nhân viên \"<?= e($nv['tennv']) ?>\"?')">Xóa</a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="6" class="nv-empty">
+                        <strong><?= $keyword !== '' ? 'Không tìm thấy nhân viên nào' : 'Chưa có nhân viên nào' ?></strong>
+                    </td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="6">
+                    Tổng số: <strong><?= $tong_nv ?></strong> nhân viên
                 </td>
             </tr>
-        <?php endforeach; ?>
-
-        <tr>
-            <td colspan="6" align="right">Bảng có <?php echo $tong_bg; ?> nhân viên</td>
-        </tr>
+        </tfoot>
     </table>
 
-</body>
-</html>
+</main>
+
+<?php include "../../includes/footer.php"; ?>

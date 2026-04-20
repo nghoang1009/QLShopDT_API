@@ -7,7 +7,7 @@ require_once "../../includes/api_helper.php";
 
 // Nếu đã đăng nhập rồi thì chuyển về trang chủ
 if (isset($_SESSION['username'])) {
-    header("Location: ../trangchu.php");
+    header("Location: /QLShopDT_API/app.php/");
     exit();
 }
 
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             regenerate_csrf();
             
-            header("Location: ../trangchu.php");
+            header("Location: /QLShopDT_API/app.php/");
             exit();
         } else {
             setFlash('error', $authResponse['message'] ?? "Tên đăng nhập hoặc mật khẩu không đúng!");

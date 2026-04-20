@@ -127,9 +127,9 @@ $base_url = '/QLShopDT_API';
 <header class="ps-header">
     <div class="ps-header-top">
 
-        <a href="/QLShopDT_API/views/trangchu.php" class="ps-logo">PHONE<span>SHOP</span></a>
+        <a href="/QLShopDT_API/app.php/" class="ps-logo">PHONE<span>SHOP</span></a>
 
-        <form class="ps-search" method="GET" action="/QLShopDT_API/views/trangchu.php">
+        <form class="ps-search" method="GET" action="/QLShopDT_API/app.php/">
             <input type="text" name="search" placeholder="Tìm kiếm sản phẩm..."
                    value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
             <button type="submit"><i class="fa fa-search"></i></button>
@@ -163,35 +163,20 @@ $base_url = '/QLShopDT_API';
 
     <nav class="ps-nav">
         <!-- Trang chủ - tất cả mọi người -->
-        <a href="/QLShopDT_API/views/trangchu.php"<?php echo nav_active('trangchu'); ?>>
+        <a href="/QLShopDT_API/app.php/"<?php echo nav_active('trangchu'); ?>>
             <i class="fa fa-home"></i> Trang chủ
         </a>
 
         <!-- Role 0: Khách hàng -->
         <?php if (isRole(0)): ?>
-            <!-- Xem sản phẩm -->
             <a href="/QLShopDT_API/views/sanpham/sanpham.php"<?php echo nav_active('sanpham'); ?>>
                 <i class="fa fa-mobile-alt"></i> Sản phẩm
             </a>
-            <!-- Xem danh mục -->
-            <a href="/QLShopDT_API/views/danhmuc/danhmuc.php"<?php echo nav_active('danhmuc'); ?>>
-                <i class="fa fa-list"></i> Danh mục
+            <a href="/QLShopDT_API/giohang"<?php echo nav_active('giohang'); ?>>
+                <i class="fa fa-shopping-cart"></i> Giỏ hàng
             </a>
-            <!-- Xem đơn hàng của bản thân -->
             <a href="/QLShopDT_API/views/donhang/donhang.php"<?php echo nav_active('donhang'); ?>>
                 <i class="fa fa-archive"></i> Đơn hàng
-            </a>
-            <!-- Xem giao hàng của bản thân -->
-            <a href="/QLShopDT_API/views/vanchuyen/vanchuyen.php"<?php echo nav_active('vanchuyen'); ?>>
-                <i class="fa fa-truck"></i> Giao hàng
-            </a>
-            <!-- Xem thanh toán của bản thân -->
-            <a href="/QLShopDT_API/views/thanhtoan/thanhtoan.php"<?php echo nav_active('thanhtoan'); ?>>
-                <i class="fa fa-credit-card"></i> Thanh toán
-            </a>
-            <!-- Xem giỏ hàng của bản thân -->
-            <a href="/QLShopDT_API/views/giohang/giohang.php"<?php echo nav_active('giohang'); ?>>
-                <i class="fa fa-shopping-cart"></i> Giỏ hàng
             </a>
         <?php endif; ?>
 
@@ -214,11 +199,11 @@ $base_url = '/QLShopDT_API';
                 <i class="fa fa-archive"></i> Đơn hàng
             </a>
             <!-- Quản lý giao hàng -->
-            <a href="/QLShopDT_API/views/vanchuyen/vanchuyen.php"<?php echo nav_active('vanchuyen'); ?>>
+            <a href="/QLShopDT_API/vanchuyen"<?php echo nav_active('vanchuyen'); ?>>
                 <i class="fa fa-truck"></i> Giao hàng
             </a>
             <!-- Quản lý thanh toán -->
-            <a href="/QLShopDT_API/views/thanhtoan/thanhtoan.php"<?php echo nav_active('thanhtoan'); ?>>
+            <a href="/QLShopDT_API/thanhtoan"<?php echo nav_active('thanhtoan'); ?>>
                 <i class="fa fa-credit-card"></i> Thanh toán
             </a>
         <?php endif; ?>
@@ -242,7 +227,7 @@ $base_url = '/QLShopDT_API';
                 <i class="fa fa-user-tie"></i> Nhân viên
             </a>
             <!-- Thống kê -->
-            <a href="/QLShopDT_API/views/thongke/thongke.php"<?php echo nav_active('thongke'); ?>>
+            <a href="/QLShopDT_API/thongke"<?php echo nav_active('thongke'); ?>>
                 <i class="fa fa-chart-bar"></i> Thống kê
             </a>
             <!-- Quản lý đơn hàng -->
@@ -250,15 +235,15 @@ $base_url = '/QLShopDT_API';
                 <i class="fa fa-archive"></i> Đơn hàng
             </a>
             <!-- Quản lý giao hàng -->
-            <a href="/QLShopDT_API/views/vanchuyen/vanchuyen.php"<?php echo nav_active('vanchuyen'); ?>>
+            <a href="/QLShopDT_API/vanchuyen"<?php echo nav_active('vanchuyen'); ?>>
                 <i class="fa fa-truck"></i> Giao hàng
             </a>
             <!-- Quản lý giỏ hàng -->
-            <a href="/QLShopDT_API/views/giohang/giohang.php"<?php echo nav_active('giohang'); ?>>
+            <a href="/QLShopDT_API/giohang"<?php echo nav_active('giohang'); ?>>
                 <i class="fa fa-shopping-cart"></i> Giỏ hàng
             </a>
             <!-- Quản lý thanh toán -->
-            <a href="/QLShopDT_API/views/thanhtoan/thanhtoan.php"<?php echo nav_active('thanhtoan'); ?>>
+            <a href="/QLShopDT_API/thanhtoan"<?php echo nav_active('thanhtoan'); ?>>
                 <i class="fa fa-credit-card"></i> Thanh toán
             </a>
         <?php endif; ?>
@@ -267,7 +252,7 @@ $base_url = '/QLShopDT_API';
 
 <!-- Nút giỏ hàng nổi -->
 <?php if (hasPermission('view_own_cart') || hasPermission('manage_product')): ?>
-    <a href="/QLShopDT_API/views/giohang.php" class="ps-cart-fab">
+    <a href="/QLShopDT_API/giohang" class="ps-cart-fab">
         <i class="fa fa-shopping-cart"></i>
     </a>
 <?php endif; ?>

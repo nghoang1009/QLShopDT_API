@@ -19,172 +19,124 @@ class ProfileController extends Controller {
         $this->taiKhoanModel = new TaiKhoan();
     }
     
+    // ===================== RESTful API Methods =====================
+
     /**
-     * Hiển thị trang profile
+     * GET /api/profile
+     * Lấy thông tin cá nhân của người dùng đang đăng nhập
      */
-    public function index() {
+    public function apiGet() {
+        header('Content-Type: application/json');
         $this->requireLogin();
-        
-        $username = $_SESSION['username'];
-        $role = $_SESSION['role'] ?? 0;
+
+        $role   = $_SESSION['role']   ?? 0;
         $userid = $_SESSION['userid'] ?? 0;
-        
-        $profile_data = [];
-        
-        // Lấy thông tin chi tiết dựa trên role
+
         if ($role == 0) {
-            // Khách hàng
-            $profile_data = $this->khachHangModel->findWithAccount($userid);
+            $profile = $this->khachHangModel->findWithAccount($userid);
         } else {
-            // Nhân viên / Admin
-            $profile_data = $this->nhanVienModel->findById($userid);
-            if ($profile_data) {
-                $profile_data['tentk'] = $username;
+            $profile = $this->nhanVienModel->findById($userid);
+            if ($profile) {
+                $profile['tentk'] = $_SESSION['username'] ?? '';
             }
         }
-        
-        $this->view('profile/index', [
-            'page_title' => 'Hồ sơ cá nhân',
-            'active_nav' => 'profile',
-            'profile' => $profile_data,
-            'role' => $role,
-            'username' => $username,
-            'success' => $this->getFlash('success'),
-            'error' => $this->getFlash('error')
-        ]);
+
+        if (!$profile) {
+            http_response_code(404);
+            echo json_encode(['status' => false, 'message' => 'Không tìm thấy thông tin cá nhân'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode(['status' => true, 'data' => $profile], JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
-     * Form chỉnh sửa profile
+     * PUT /api/profile
+     * Cập nhật thông tin cá nhân của người dùng đang đăng nhập
      */
-    public function edit() {
+    public function apiUpdate() {
+        header('Content-Type: application/json');
         $this->requireLogin();
-        
-        $username = $_SESSION['username'];
-        $role = $_SESSION['role'] ?? 0;
+
+        $role   = $_SESSION['role']   ?? 0;
         $userid = $_SESSION['userid'] ?? 0;
-        
-        $profile_data = [];
-        
+
+        $body = json_decode(file_get_contents('php://input'), true) ?? [];
+
         if ($role == 0) {
-            $profile_data = $this->khachHangModel->findWithAccount($userid);
-        } else {
-            $profile_data = $this->nhanVienModel->findById($userid);
-            if ($profile_data) {
-                $profile_data['tentk'] = $username;
+            $name = trim($body['tenkh'] ?? '');
+            if (empty($name)) {
+                http_response_code(422);
+                echo json_encode(['status' => false, 'message' => 'Tên không được để trống'], JSON_UNESCAPED_UNICODE);
+                return;
             }
-        }
-        
-        $this->view('profile/edit', [
-            'page_title' => 'Chỉnh sửa hồ sơ',
-            'active_nav' => 'profile',
-            'profile' => $profile_data,
-            'role' => $role,
-            'username' => $username
-        ]);
-    }
-    
-    /**
-     * Xử lý cập nhật profile
-     */
-    public function update() {
-        $this->requireLogin();
-        $this->verifyCsrf();
-        
-        $role = $_SESSION['role'] ?? 0;
-        $userid = $_SESSION['userid'] ?? 0;
-        
-        if ($role == 0) {
-            // Cập nhật khách hàng
-            $data = [
-                'tenkh' => $this->input('tenkh'),
-                'diachi' => $this->input('diachi'),
-                'sdt' => $this->input('sdt')
-            ];
-            
-            $result = $this->khachHangModel->updateCustomer($userid, $data);
+            $ok = $this->khachHangModel->updateCustomer($userid, [
+                'tenkh'  => $name,
+                'diachi' => $body['diachi'] ?? '',
+                'sdt'    => $body['sdt']    ?? '',
+            ]);
         } else {
-            // Cập nhật nhân viên
-            $data = [
-                'tennv' => $this->input('tennv'),
-                'sdt' => $this->input('sdt'),
-                'ns' => $this->input('ns')
-            ];
-            
-            $result = $this->nhanVienModel->updateStaff($userid, $data);
+            $name = trim($body['tennv'] ?? '');
+            if (empty($name)) {
+                http_response_code(422);
+                echo json_encode(['status' => false, 'message' => 'Tên không được để trống'], JSON_UNESCAPED_UNICODE);
+                return;
+            }
+            $data = ['tennv' => $name, 'sdt' => $body['sdt'] ?? ''];
+            if (!empty($body['ns'])) {
+                $data['ns'] = $body['ns'];
+            }
+            $ok = $this->nhanVienModel->updateStaff($userid, $data);
         }
-        
-        if ($result) {
-            $this->setFlash('success', 'Cập nhật thông tin thành công');
+
+        if ($ok !== false) {
+            echo json_encode(['status' => true, 'message' => 'Cập nhật thông tin cá nhân thành công'], JSON_UNESCAPED_UNICODE);
         } else {
-            $this->setFlash('error', 'Cập nhật thông tin thất bại');
+            http_response_code(500);
+            echo json_encode(['status' => false, 'message' => 'Cập nhật thông tin thất bại'], JSON_UNESCAPED_UNICODE);
         }
-        
-        $this->redirect('/profile');
     }
-    
+
     /**
-     * Form đổi mật khẩu
+     * POST /api/profile/change-password
+     * Đổi mật khẩu
      */
-    public function changePasswordForm() {
+    public function apiChangePassword() {
+        header('Content-Type: application/json');
         $this->requireLogin();
-        
-        $this->view('profile/change_password', [
-            'page_title' => 'Đổi mật khẩu',
-            'active_nav' => 'profile',
-            'error' => $this->getFlash('error'),
-            'success' => $this->getFlash('success')
-        ]);
-    }
-    
-    /**
-     * Xử lý đổi mật khẩu
-     */
-    public function changePassword() {
-        $this->requireLogin();
-        $this->verifyCsrf();
-        
+
         $userid = $_SESSION['userid'] ?? 0;
-        $currentPassword = $this->input('current_password');
-        $newPassword = $this->input('new_password');
-        $confirmPassword = $this->input('confirm_password');
-        
-        // Validate
+        $body   = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        $currentPassword = $body['current_password'] ?? '';
+        $newPassword     = $body['new_password']     ?? '';
+        $confirmPassword = $body['confirm_password'] ?? '';
+
         if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
-            $this->setFlash('error', 'Vui lòng nhập đầy đủ thông tin');
-            $this->redirect('/profile/change-password');
+            http_response_code(422);
+            echo json_encode(['status' => false, 'message' => 'Vui lòng nhập đầy đủ thông tin'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
+
         if ($newPassword !== $confirmPassword) {
-            $this->setFlash('error', 'Mật khẩu mới không khớp');
-            $this->redirect('/profile/change-password');
+            http_response_code(422);
+            echo json_encode(['status' => false, 'message' => 'Mật khẩu mới không khớp'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
+
         if (strlen($newPassword) < 6) {
-            $this->setFlash('error', 'Mật khẩu mới phải có ít nhất 6 ký tự');
-            $this->redirect('/profile/change-password');
+            http_response_code(422);
+            echo json_encode(['status' => false, 'message' => 'Mật khẩu mới phải có ít nhất 6 ký tự'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        // Kiểm tra mật khẩu hiện tại
-        $user = $this->taiKhoanModel->findById($userid);
-        if (!$user) {
-            $this->setFlash('error', 'Không tìm thấy tài khoản');
-            $this->redirect('/profile/change-password');
-            return;
-        }
-        
-        // Đổi mật khẩu (method sẽ kiểm tra password cũ)
+
         $result = $this->taiKhoanModel->changePassword($userid, $currentPassword, $newPassword);
-        
+
         if ($result['success']) {
-            $this->setFlash('success', $result['message']);
-            $this->redirect('/profile');
+            echo json_encode(['status' => true, 'message' => $result['message']], JSON_UNESCAPED_UNICODE);
         } else {
-            $this->setFlash('error', $result['message']);
-            $this->redirect('/profile/change-password');
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => $result['message']], JSON_UNESCAPED_UNICODE);
         }
     }
 }

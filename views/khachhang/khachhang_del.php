@@ -1,30 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xóa khách hàng</title>
-</head>
-<body>
-    <?php
-    include "../../includes/api_helper.php";
+<?php
+/**
+ * Xóa Khách hàng
+ */
+session_start();
+require_once "../../includes/api_helper.php";
 
-    $makh = $_GET['makh'] ?? 0;
+requireLogin();
+requireRole([1, 2]);
 
-    // Gọi API để xóa khách hàng
-    $result = callKhachhangAPI([
-        "action" => "delete",
-        "makh"   => $makh
-    ]);
+$makh = (int)($_GET['makh'] ?? 0);
 
-    if ($result && $result['status']) {
-        header("Location: khachhang.php");
-        exit();
-    } else {
-        echo "<h3>Xóa thất bại</h3>";
-        echo "<p>" . ($result['message'] ?? 'Lỗi không xác định') . "</p>";
-        echo "<p><a href='khachhang.php'>Quay lại</a></p>";
-    }
-    ?>
-</body>
-</html>
+if (!$makh) {
+    setFlash('error', 'Không tìm thấy khách hàng');
+    header("Location: khachhang.php");
+    exit();
+}
+
+$result = callAPI('DELETE', '/api/khachhang/' . $makh);
+
+if ($result && $result['status']) {
+    setFlash('success', 'Xóa khách hàng thành công');
+} else {
+    setFlash('error', $result['message'] ?? 'Xóa khách hàng thất bại');
+}
+
+header("Location: khachhang.php");
+exit();

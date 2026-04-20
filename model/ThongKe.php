@@ -69,7 +69,7 @@ class ThongKe extends Model {
      */
     public function getTopProducts($limit = 10) {
         $sql = "SELECT sp.masp, sp.tensp, sp.hinhanh, sp.gia, sp.hang,
-                       SUM(ct.soluong) as so_luong_ban, SUM(ct.soluong * ct.dongia) as doanhthu
+                       SUM(ct.sl) as so_luong_ban, SUM(ct.sl * sp.gia) as doanhthu
                 FROM chitietdonhang ct
                 JOIN sanpham sp ON ct.masp = sp.masp
                 JOIN donhang dh ON ct.madh = dh.madh
@@ -111,8 +111,8 @@ class ThongKe extends Model {
     public function getRevenueByCategory() {
         $sql = "SELECT dm.madm, dm.tendm, 
                        COUNT(DISTINCT ct.madh) as so_don,
-                       SUM(ct.soluong) as so_luong_ban,
-                       SUM(ct.soluong * ct.dongia) as doanhthu
+                       SUM(ct.sl) as so_luong_ban,
+                       SUM(ct.sl * sp.gia) as doanhthu
                 FROM danhmuc dm
                 JOIN sanpham sp ON dm.madm = sp.madm
                 JOIN chitietdonhang ct ON sp.masp = ct.masp

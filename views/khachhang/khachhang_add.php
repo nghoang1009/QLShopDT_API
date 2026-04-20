@@ -1,70 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm khách hàng</title>
-</head>
-<body>
-    <h1 align="center">THÊM KHÁCH HÀNG</h1>
+<?php
+/**
+ * Thêm Khách hàng mới
+ */
+session_start();
+require_once "../../includes/api_helper.php";
 
-    <?php
-    include "../../includes/api_helper.php";
+requireLogin();
+requireRole([1, 2]);
 
-    $thongbao = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $tenkh  = trim($_POST['txt_tenkh']  ?? '');
+    $diachi = trim($_POST['txt_diachi'] ?? '');
+    $sdt    = trim($_POST['txt_sdt']    ?? '');
 
-    // Xử lý khi submit form
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $tenkh  = $_POST['txt_tenkh']  ?? '';
-        $diachi = $_POST['txt_diachi'] ?? '';
-        $sdt    = $_POST['txt_sdt']    ?? '';
-
-        // Gọi API để thêm khách hàng
-        $result = callKhachhangAPI([
-            "action" => "add",
-            "tenkh"  => $tenkh,
-            "diachi" => $diachi,
-            "sdt"    => $sdt
-        ]);
-
-        if ($result && $result['status']) {
-            header("Location: khachhang.php");
-            exit();
-        } else {
-            $thongbao = "Lỗi: " . ($result['message'] ?? 'Không xác định');
-        }
+    if (empty($tenkh)) {
+        setFlash('error', 'Tên khách hàng không được để trống');
+        header("Location: khachhang_add.php");
+        exit();
     }
-    ?>
 
-    <?php if ($thongbao): ?>
-        <p align="center" style="color:red;"><?php echo $thongbao; ?></p>
+    $result = callAPI('POST', '/api/khachhang', [
+        'tenkh'  => $tenkh,
+        'diachi' => $diachi,
+        'sdt'    => $sdt,
+    ]);
+
+    if ($result && $result['status']) {
+        setFlash('success', 'Thêm khách hàng "' . $tenkh . '" thành công');
+        header("Location: khachhang.php");
+        exit();
+    }
+    setFlash('error', $result['message'] ?? 'Thêm khách hàng thất bại');
+    header("Location: khachhang_add.php");
+    exit();
+}
+
+$error = getFlash('error');
+
+$page_title = 'Thêm Khách hàng';
+$active_nav = 'khachhang';
+$extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/khachhang.css">
+<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+
+include "../../includes/header.php";
+?>
+
+<main class="container">
+    <h1>THÊM KHÁCH HÀNG</h1>
+
+    <?php if ($error): ?>
+        <div class="dm-alert-error"><?= e($error) ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="" enctype="multipart/form-data">
-        <table border="1" align="center">
-            <tr>
-                <td colspan="2" align="center">Thông tin khách hàng</td>
-            </tr>
-            <tr>
-                <td>Tên khách hàng:</td>
-                <td><input type="text" name="txt_tenkh" required></td>
-            </tr>
-            <tr>
-                <td>Địa chỉ:</td>
-                <td><input type="text" name="txt_diachi"></td>
-            </tr>
-            <tr>
-                <td>Số điện thoại:</td>
-                <td><input type="text" name="txt_sdt"></td>
-            </tr>
-            <tr>
-                <td colspan="2" align="center">
-                    <input type="submit" value="OK">
-                    <input type="reset"  value="Reset">
-                    <input type="button" value="Quay lại" onclick="window.location.href='khachhang.php'">
-                </td>
-            </tr>
-        </table>
+    <form method="POST" action="khachhang_add.php" class="dm-form">
+
+        <div class="dm-form-group">
+            <label for="txt_tenkh" class="dm-label">
+                Tên khách hàng <span class="dm-required">*</span>
+            </label>
+            <input type="text" id="txt_tenkh" name="txt_tenkh"
+                   placeholder="Nhập tên khách hàng"
+                   class="dm-input" required>
+            <small style="color:var(--dm-muted); font-size:12px; margin-top:4px; display:block;">
+                Tài khoản sẽ được tạo tự động với mật khẩu mặc định là <strong>123456</strong>
+            </small>
+        </div>
+
+        <div class="dm-form-group">
+            <label for="txt_diachi" class="dm-label">Địa chỉ</label>
+            <input type="text" id="txt_diachi" name="txt_diachi"
+                   placeholder="Nhập địa chỉ"
+                   class="dm-input">
+        </div>
+
+        <div class="dm-form-group">
+            <label for="txt_sdt" class="dm-label">Số điện thoại</label>
+            <input type="text" id="txt_sdt" name="txt_sdt"
+                   placeholder="Nhập số điện thoại"
+                   class="dm-input">
+        </div>
+
+        <div class="dm-form-actions">
+            <button type="submit" class="dm-btn dm-btn-primary">Thêm khách hàng</button>
+            <a href="khachhang.php" class="dm-btn dm-btn-default">Quay lại</a>
+        </div>
     </form>
-</body>
-</html>
+</main>
+
+<?php include "../../includes/footer.php"; ?>

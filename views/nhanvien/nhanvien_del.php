@@ -1,30 +1,28 @@
 <?php
+/**
+ * Xóa Nhân viên
+ */
 session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../auth/login.php");
-    exit();
-}
+require_once "../../includes/api_helper.php";
 
-include "../../includes/api_helper.php";
+requireLogin();
+requireRole([1]);
 
-$result = callNhanvienAPI([
-    "action" => "delete",
-    "manv" => $_GET['manv'] ?? 0
-]);
+$manv = (int)($_GET['manv'] ?? 0);
 
-if ($result && $result['status']) {
+if (!$manv) {
+    setFlash('error', 'Không tìm thấy nhân viên');
     header("Location: nhanvien.php");
     exit();
-} else {
-    $page_title = 'Lỗi xóa nhân viên';
-    $active_nav = 'nhanvien';
-    $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/danhmuc.css">';
-    include "../../includes/header.php";
-    
-    echo '<div class="dm-error-box">';
-    echo '<h3 class="dm-error-title">Xóa thất bại</h3>';
-    echo '<p class="dm-error-text">' . htmlspecialchars($result['message'] ?? 'Lỗi không xác định') . '</p>';
-    echo '<a href="nhanvien.php" class="dm-btn dm-btn-primary">Quay lại danh sách</a>';
-    echo '</div></body></html>';
 }
-?>
+
+$result = callAPI('DELETE', '/api/nhanvien/' . $manv);
+
+if ($result && $result['status']) {
+    setFlash('success', 'Xóa nhân viên thành công');
+} else {
+    setFlash('error', $result['message'] ?? 'Xóa nhân viên thất bại');
+}
+
+header("Location: nhanvien.php");
+exit();

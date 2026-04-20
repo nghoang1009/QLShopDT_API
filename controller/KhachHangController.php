@@ -20,237 +20,133 @@ class KhachHangController extends Controller {
         $this->donHangModel = new DonHang();
     }
     
+    // ===================== RESTful API Methods =====================
+
     /**
-     * Danh sách khách hàng
+     * GET /api/khachhang
+     * ?keyword= để tìm kiếm
      */
-    public function index() {
-        $this->requireRole([1, 2]); // Admin và nhân viên
-        
-        $customers = $this->khachHangModel->getAllWithAccount();
-        
-        $this->view('khachhang/index', [
-            'page_title' => 'Quản lý Khách hàng',
-            'active_nav' => 'khachhang',
-            'customers' => $customers,
-            'success' => $this->getFlash('success'),
-            'error' => $this->getFlash('error')
-        ]);
-    }
-    
-    /**
-     * Chi tiết khách hàng
-     */
-    public function show($makh) {
-        $this->requireRole([1, 2]);
-        
-        $customer = $this->khachHangModel->findWithAccount($makh);
-        
-        if (!$customer) {
-            $this->setFlash('error', 'Không tìm thấy khách hàng');
-            $this->redirect('/khachhang');
-            return;
-        }
-        
-        // Lấy lịch sử đơn hàng
-        $orders = $this->donHangModel->getByCustomer($makh);
-        
-        $this->view('khachhang/detail', [
-            'page_title' => 'Chi tiết Khách hàng',
-            'active_nav' => 'khachhang',
-            'customer' => $customer,
-            'orders' => $orders
-        ]);
-    }
-    
-    /**
-     * Form thêm khách hàng
-     */
-    public function create() {
-        $this->requireRole([1, 2]);
-        
-        $this->view('khachhang/create', [
-            'page_title' => 'Thêm Khách hàng',
-            'active_nav' => 'khachhang'
-        ]);
-    }
-    
-    /**
-     * Xử lý thêm khách hàng
-     */
-    public function store() {
-        $this->requireRole([1, 2]);
-        $this->verifyCsrf();
-        
-        $tenkh = $this->input('tenkh');
-        $diachi = $this->input('diachi');
-        $sdt = $this->input('sdt');
-        $username = $this->input('username');
-        $password = $this->input('password');
-        
-        // Validate
-        if (empty($tenkh)) {
-            $this->setFlash('error', 'Vui lòng nhập tên khách hàng');
-            $this->redirect('/khachhang/add');
-            return;
-        }
-        
-        // Tạo tài khoản nếu có username và password
-        $makh = null;
-        if (!empty($username) && !empty($password)) {
-            // Kiểm tra username đã tồn tại
-            if ($this->taiKhoanModel->usernameExists($username)) {
-                $this->setFlash('error', 'Tên đăng nhập đã tồn tại');
-                $this->redirect('/khachhang/add');
-                return;
-            }
-            
-            // Tạo tài khoản khách hàng (role = 0)
-            $result = $this->taiKhoanModel->register($username, $password, 0);
-            if ($result['success']) {
-                $makh = $result['id'];
-            } else {
-                $this->setFlash('error', $result['message']);
-                $this->redirect('/khachhang/add');
-                return;
-            }
-        }
-        
-        // Thêm khách hàng
-        $data = [
-            'makh' => $makh,
-            'tenkh' => $tenkh,
-            'diachi' => $diachi,
-            'sdt' => $sdt
-        ];
-        
-        $result = $this->khachHangModel->add($data);
-        
-        if ($result) {
-            $this->setFlash('success', 'Thêm khách hàng thành công');
+    public function apiIndex() {
+        header('Content-Type: application/json');
+        $keyword = $_GET['keyword'] ?? '';
+        if ($keyword !== '') {
+            $customers = $this->khachHangModel->search($keyword);
         } else {
-            $this->setFlash('error', 'Thêm khách hàng thất bại');
+            $customers = $this->khachHangModel->getAllWithAccount();
         }
-        
-        $this->redirect('/khachhang');
+        echo json_encode(['status' => true, 'data' => $customers ?: [], 'total' => count($customers ?: [])], JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
-     * Form chỉnh sửa khách hàng
+     * GET /api/khachhang/{id}
      */
-    public function edit($makh) {
-        $this->requireRole([1, 2]);
-        
-        $customer = $this->khachHangModel->findWithAccount($makh);
-        
+    public function apiShow($id) {
+        header('Content-Type: application/json');
+        $customer = $this->khachHangModel->findWithAccount($id);
         if (!$customer) {
-            $this->setFlash('error', 'Không tìm thấy khách hàng');
-            $this->redirect('/khachhang');
+            http_response_code(404);
+            echo json_encode(['status' => false, 'message' => 'Không tìm thấy khách hàng'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $this->view('khachhang/edit', [
-            'page_title' => 'Sửa Khách hàng',
-            'active_nav' => 'khachhang',
-            'customer' => $customer
-        ]);
+        echo json_encode(['status' => true, 'data' => $customer], JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
-     * Xử lý cập nhật khách hàng
+     * POST /api/khachhang
+     * Body: tenkh, diachi, sdt
+     * Tự động tạo tài khoản với tentk=tenkh, password=123456, role=0
      */
-    public function update() {
-        $this->requireRole([1, 2]);
-        $this->verifyCsrf();
-        
-        $makh = $this->input('makh');
-        $tenkh = $this->input('tenkh');
-        $diachi = $this->input('diachi');
-        $sdt = $this->input('sdt');
-        
-        $customer = $this->khachHangModel->findById($makh);
-        
-        if (!$customer) {
-            $this->setFlash('error', 'Không tìm thấy khách hàng');
-            $this->redirect('/khachhang');
-            return;
-        }
-        
+    public function apiStore() {
+        header('Content-Type: application/json');
+        $input  = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+        $tenkh  = trim($input['tenkh']  ?? '');
+        $diachi = trim($input['diachi'] ?? '');
+        $sdt    = trim($input['sdt']    ?? '');
+
         if (empty($tenkh)) {
-            $this->setFlash('error', 'Vui lòng nhập tên khách hàng');
-            $this->redirect('/khachhang/edit/' . $makh);
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => 'Tên khách hàng không được để trống'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $data = [
-            'tenkh' => $tenkh,
-            'diachi' => $diachi,
-            'sdt' => $sdt
-        ];
-        
-        $result = $this->khachHangModel->updateCustomer($makh, $data);
-        
-        if ($result) {
-            $this->setFlash('success', 'Cập nhật khách hàng thành công');
-        } else {
-            $this->setFlash('error', 'Cập nhật khách hàng thất bại');
+
+        $tkResult = $this->taiKhoanModel->register($tenkh, '123456', 0);
+        if (!$tkResult['success']) {
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => $tkResult['message']], JSON_UNESCAPED_UNICODE);
+            return;
         }
-        
-        $this->redirect('/khachhang');
+
+        $matk = $tkResult['id'];
+        $ok = $this->khachHangModel->add(['makh' => $matk, 'tenkh' => $tenkh, 'diachi' => $diachi, 'sdt' => $sdt]);
+        if ($ok === false) {
+            $this->taiKhoanModel->deleteAccount($matk);
+            http_response_code(500);
+            echo json_encode(['status' => false, 'message' => 'Thêm khách hàng thất bại'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        echo json_encode(['status' => true, 'message' => 'Thêm khách hàng thành công', 'makh' => $matk], JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
-     * Xóa khách hàng
+     * PUT /api/khachhang/{id}
+     * Body: tenkh, diachi, sdt
      */
-    public function delete($makh) {
-        $this->requireRole([1]); // Chỉ admin mới được xóa
-        
-        $customer = $this->khachHangModel->findById($makh);
-        
-        if (!$customer) {
-            $this->setFlash('error', 'Không tìm thấy khách hàng');
-            $this->redirect('/khachhang');
+    public function apiUpdate($id) {
+        header('Content-Type: application/json');
+        $input  = json_decode(file_get_contents('php://input'), true) ?: [];
+        $tenkh  = trim($input['tenkh']  ?? '');
+        $diachi = trim($input['diachi'] ?? '');
+        $sdt    = trim($input['sdt']    ?? '');
+
+        if (empty($tenkh)) {
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => 'Tên khách hàng không được để trống'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        // Kiểm tra có đơn hàng không
-        $orders = $this->donHangModel->getByCustomer($makh);
+
+        $customer = $this->khachHangModel->findById($id);
+        if (!$customer) {
+            http_response_code(404);
+            echo json_encode(['status' => false, 'message' => 'Không tìm thấy khách hàng'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $ok = $this->khachHangModel->updateCustomer($id, ['tenkh' => $tenkh, 'diachi' => $diachi, 'sdt' => $sdt]);
+        if ($ok !== false) {
+            echo json_encode(['status' => true, 'message' => 'Cập nhật khách hàng thành công'], JSON_UNESCAPED_UNICODE);
+        } else {
+            http_response_code(500);
+            echo json_encode(['status' => false, 'message' => 'Cập nhật thất bại'], JSON_UNESCAPED_UNICODE);
+        }
+    }
+
+    /**
+     * DELETE /api/khachhang/{id}
+     * Xóa tài khoản → CASCADE xóa khách hàng
+     */
+    public function apiDestroy($id) {
+        header('Content-Type: application/json');
+        $customer = $this->khachHangModel->findById($id);
+        if (!$customer) {
+            http_response_code(404);
+            echo json_encode(['status' => false, 'message' => 'Không tìm thấy khách hàng'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $orders = $this->donHangModel->getByCustomer($id);
         if (!empty($orders)) {
-            $this->setFlash('error', 'Không thể xóa khách hàng đã có đơn hàng');
-            $this->redirect('/khachhang');
+            http_response_code(409);
+            echo json_encode(['status' => false, 'message' => 'Không thể xóa khách hàng đã có đơn hàng'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $result = $this->khachHangModel->deleteCustomer($makh);
-        
-        if ($result) {
-            $this->setFlash('success', 'Xóa khách hàng thành công');
+
+        $ok = $this->taiKhoanModel->deleteAccount($id);
+        if ($ok !== false) {
+            echo json_encode(['status' => true, 'message' => 'Xóa khách hàng thành công'], JSON_UNESCAPED_UNICODE);
         } else {
-            $this->setFlash('error', 'Xóa khách hàng thất bại');
+            http_response_code(500);
+            echo json_encode(['status' => false, 'message' => 'Xóa khách hàng thất bại'], JSON_UNESCAPED_UNICODE);
         }
-        
-        $this->redirect('/khachhang');
-    }
-    
-    /**
-     * Tìm kiếm khách hàng
-     */
-    public function search() {
-        $this->requireRole([1, 2]);
-        
-        $keyword = $this->input('q', '');
-        
-        if (empty($keyword)) {
-            $this->redirect('/khachhang');
-            return;
-        }
-        
-        $customers = $this->khachHangModel->search($keyword);
-        
-        $this->view('khachhang/index', [
-            'page_title' => 'Tìm kiếm Khách hàng',
-            'active_nav' => 'khachhang',
-            'customers' => $customers,
-            'keyword' => $keyword
-        ]);
     }
 }

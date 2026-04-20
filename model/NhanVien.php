@@ -32,10 +32,11 @@ class NhanVien extends Model {
      * Thêm nhân viên mới
      */
     public function add($data) {
-        $sql = "INSERT INTO nhanvien (manv, tennv, sdt, ns) VALUES (?, ?, ?, ?)";
-        return $this->db->insert($sql, 'isss', [
+        $sql = "INSERT INTO nhanvien (manv, tennv, diachi, sdt, ns) VALUES (?, ?, ?, ?, ?)";
+        return $this->db->insert($sql, 'issss', [
             $data['manv'],
             $data['tennv'],
+            $data['diachi'] ?? '',
             $data['sdt'] ?? '',
             $data['ns'] ?? null
         ]);

@@ -22,6 +22,21 @@ class GioHang extends Model {
                 JOIN sanpham sp ON gi.masp = sp.masp";
         return $this->db->select($sql);
     }
+
+    /**
+     * Lấy tất cả giỏ hàng kèm thông tin khách hàng (dùng cho admin)
+     */
+    public function getAllItemsWithCustomer() {
+        $sql = "SELECT gi.maitem, gi.magio, gi.masp, gi.sl,
+                gh.makh, kh.tenkh,
+                sp.tensp, sp.gia, sp.hinhanh, sp.hang, (sp.gia * gi.sl) AS thanhtien
+                FROM giohang_item gi
+                JOIN giohang gh ON gi.magio = gh.magio
+                JOIN khachhang kh ON gh.makh = kh.makh
+                JOIN sanpham sp ON gi.masp = sp.masp
+                ORDER BY gh.makh, gi.maitem";
+        return $this->db->select($sql);
+    }
     
     /**
      * Lấy giỏ hàng theo mã khách hàng

@@ -38,6 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $error = getFlash('error');
 
+// Lấy danh sách khách hàng cho dropdown
+$kh_result = callAPI('GET', '/api/khachhang');
+$khachhangs = ($kh_result && $kh_result['status']) ? $kh_result['data'] : [];
+
 $page_title = 'Tạo Đơn hàng mới';
 $active_nav = 'donhang';
 $extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/donhang.css">
@@ -78,11 +82,17 @@ include "../../includes/header.php";
 
                     <div class="dh-form-group">
                         <label for="txt_makh" class="dh-label">
-                            Mã khách hàng <span class="dh-required">*</span>
+                            Khách hàng <span class="dh-required">*</span>
                         </label>
-                        <input type="number" id="txt_makh" name="txt_makh"
-                               placeholder="Nhập mã khách hàng"
-                               class="dh-input" min="1" required>
+                        <select id="txt_makh" name="txt_makh" class="dh-input" required>
+                            <option value="">-- Chọn khách hàng --</option>
+                            <?php foreach ($khachhangs as $kh): ?>
+                                <option value="<?= (int)$kh['makh'] ?>">
+                                    #<?= (int)$kh['makh'] ?> - <?= e($kh['tenkh']) ?>
+                                    <?= !empty($kh['sdt']) ? '(' . e($kh['sdt']) . ')' : '' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
 
                     <div class="dh-form-group">

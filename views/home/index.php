@@ -110,11 +110,18 @@ include BASE_PATH . '/includes/footer.php';
                         <div class="ps-product-price"><?php echo $gia; ?>đ</div>
                     </div>
                     <div class="ps-product-action">
-                        <a href="<?php echo BASE_URL; ?>/app.php/sanpham/detail/<?php echo $masp; ?>"
+                        <a href="/QLShopDT_API/views/sanpham/chitietsanpham.php?masp=<?php echo $masp; ?>"
                            class="ps-btn ps-btn-primary"
-                           style="width:100%;justify-content:center">
+                           style="<?php echo (isset($_SESSION['role']) && $_SESSION['role'] == 0) ? 'width:60%;' : 'width:100%;' ?>justify-content:center">
                             <i class="fa fa-eye"></i> Xem chi tiết
                         </a>
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
+                        <button onclick="addToCart(<?php echo (int)$masp; ?>, this)"
+                                class="ps-btn"
+                                style="width:36%;background:#e94560;color:#fff;border:none;cursor:pointer;justify-content:center;">
+                            <i class="fa fa-cart-plus"></i>
+                        </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -127,6 +134,34 @@ include BASE_PATH . '/includes/footer.php';
         <?php endif; ?>
     </div>
 </div>
+
+<?php if (isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
+<a href="/QLShopDT_API/app.php/giohang" class="ps-cart-fab">
+    <i class="fa fa-shopping-cart"></i>
+</a>
+<script>
+function addToCart(masp, btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
+    fetch('/QLShopDT_API/app.php/giohang/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'masp=' + masp + '&soluong=1'
+    }).then(function() {
+        btn.innerHTML = '<i class="fa fa-check"></i>';
+        btn.style.background = '#10b981';
+        setTimeout(function() {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa fa-cart-plus"></i>';
+            btn.style.background = '#e94560';
+        }, 1500);
+    }).catch(function() {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-cart-plus"></i>';
+    });
+}
+</script>
+<?php endif; ?>
 
 </body>
 </html>

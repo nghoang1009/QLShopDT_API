@@ -106,6 +106,16 @@ $img_base = '/QLShopDT_API/includes/img/';
                 <?php if ($can_edit): ?>
                     <a href="sanpham_edit.php?masp=<?= $sp['masp'] ?>" class="sp-btn sp-btn-edit-lg">Sửa sản phẩm</a>
                 <?php endif; ?>
+                <?php if (!$can_edit && isset($_SESSION['role']) && $_SESSION['role'] == 0): ?>
+                    <form method="POST" action="/QLShopDT_API/app.php/giohang/add" style="display:inline;">
+                        <input type="hidden" name="masp" value="<?= (int)$sp['masp'] ?>">
+                        <input type="hidden" name="soluong" value="1">
+                        <button type="submit" class="sp-btn sp-btn-edit-lg"
+                                style="background:#e94560;border:none;cursor:pointer;color:#fff;">
+                            <i class="fas fa-cart-plus"></i> Thêm vào giỏ hàng
+                        </button>
+                    </form>
+                <?php endif; ?>
                 <a href="sanpham.php" class="sp-btn sp-btn-default">Quay lại danh sách</a>
             </div>
         </div>

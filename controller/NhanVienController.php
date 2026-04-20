@@ -17,225 +17,140 @@ class NhanVienController extends Controller {
         $this->taiKhoanModel = new TaiKhoan();
     }
     
+    // ===================== RESTful API Methods =====================
+
     /**
-     * Danh sách nhân viên
+     * GET /api/nhanvien
+     * ?keyword= để tìm kiếm
      */
-    public function index() {
-        $this->requireRole([1]); // Chỉ admin
-        
-        $employees = $this->nhanVienModel->getAll();
-        
-        $this->view('nhanvien/index', [
-            'page_title' => 'Quản lý Nhân viên',
-            'active_nav' => 'nhanvien',
-            'employees' => $employees,
-            'success' => $this->getFlash('success'),
-            'error' => $this->getFlash('error')
-        ]);
+    public function apiIndex() {
+        header('Content-Type: application/json');
+        $keyword = $_GET['keyword'] ?? '';
+        if ($keyword !== '') {
+            $employees = $this->nhanVienModel->search($keyword);
+        } else {
+            $employees = $this->nhanVienModel->getAll();
+        }
+        echo json_encode(['status' => true, 'data' => $employees ?: [], 'total' => count($employees ?: [])], JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
-     * Chi tiết nhân viên
+     * GET /api/nhanvien/{id}
      */
-    public function show($manv) {
-        $this->requireRole([1]);
-        
-        $employee = $this->nhanVienModel->findById($manv);
-        
+    public function apiShow($id) {
+        header('Content-Type: application/json');
+        $employee = $this->nhanVienModel->findById($id);
         if (!$employee) {
-            $this->setFlash('error', 'Không tìm thấy nhân viên');
-            $this->redirect('/nhanvien');
+            http_response_code(404);
+            echo json_encode(['status' => false, 'message' => 'Không tìm thấy nhân viên'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $this->view('nhanvien/detail', [
-            'page_title' => 'Chi tiết Nhân viên',
-            'active_nav' => 'nhanvien',
-            'employee' => $employee
-        ]);
+        echo json_encode(['status' => true, 'data' => $employee], JSON_UNESCAPED_UNICODE);
     }
-    
+
     /**
-     * Form thêm nhân viên
+     * POST /api/nhanvien
+     * Body: tennv, sdt, ns
      */
-    public function create() {
-        $this->requireRole([1]);
-        
-        $this->view('nhanvien/create', [
-            'page_title' => 'Thêm Nhân viên',
-            'active_nav' => 'nhanvien'
-        ]);
-    }
-    
-    /**
-     * Xử lý thêm nhân viên
-     */
-    public function store() {
-        $this->requireRole([1]);
-        $this->verifyCsrf();
-        
-        $tennv = $this->input('tennv');
-        $sdt = $this->input('sdt');
-        $ns = $this->input('ns');
-        $username = $this->input('username');
-        $password = $this->input('password');
-        
-        // Validate
+    public function apiStore() {
+        header('Content-Type: application/json');
+        $input = json_decode(file_get_contents('php://input'), true) ?: $_POST;
+        $tennv    = trim($input['tennv']    ?? '');
+        $sdt      = trim($input['sdt']      ?? '');
+        $ns       = trim($input['ns']       ?? '');
+        $diachi   = trim($input['diachi']   ?? '');
+        $username = trim($input['username'] ?? '');
+        $password = trim($input['password'] ?? '');
+
         if (empty($tennv)) {
-            $this->setFlash('error', 'Vui lòng nhập tên nhân viên');
-            $this->redirect('/nhanvien/add');
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => 'Tên nhân viên không được để trống'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        // Tạo tài khoản nếu có username và password
-        $manv = null;
-        if (!empty($username) && !empty($password)) {
-            // Kiểm tra username đã tồn tại
-            if ($this->taiKhoanModel->usernameExists($username)) {
-                $this->setFlash('error', 'Tên đăng nhập đã tồn tại');
-                $this->redirect('/nhanvien/add');
-                return;
-            }
-            
-            // Tạo tài khoản nhân viên (role = 2)
-            $result = $this->taiKhoanModel->register($username, $password, 2);
-            if ($result['success']) {
-                $manv = $result['id'];
-            } else {
-                $this->setFlash('error', $result['message']);
-                $this->redirect('/nhanvien/add');
-                return;
-            }
-        }
-        
-        // Thêm nhân viên
-        $data = [
-            'manv' => $manv,
-            'tennv' => $tennv,
-            'sdt' => $sdt,
-            'ns' => $ns ?: null
-        ];
-        
-        $result = $this->nhanVienModel->add($data);
-        
-        if ($result) {
-            $this->setFlash('success', 'Thêm nhân viên thành công');
-        } else {
-            $this->setFlash('error', 'Thêm nhân viên thất bại');
-        }
-        
-        $this->redirect('/nhanvien');
-    }
-    
-    /**
-     * Form chỉnh sửa nhân viên
-     */
-    public function edit($manv) {
-        $this->requireRole([1]);
-        
-        $employee = $this->nhanVienModel->findById($manv);
-        
-        if (!$employee) {
-            $this->setFlash('error', 'Không tìm thấy nhân viên');
-            $this->redirect('/nhanvien');
+        if (empty($username) || empty($password)) {
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => 'Tên đăng nhập và mật khẩu không được để trống'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $this->view('nhanvien/edit', [
-            'page_title' => 'Sửa Nhân viên',
-            'active_nav' => 'nhanvien',
-            'employee' => $employee
+
+        // Tạo tài khoản nhân viên (role = 2) trước để lấy matk làm manv
+        $regResult = $this->taiKhoanModel->register($username, $password, 2);
+        if (!$regResult['success']) {
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => $regResult['message']], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $manv = $regResult['id'];
+        $ok = $this->nhanVienModel->add([
+            'manv'   => $manv,
+            'tennv'  => $tennv,
+            'diachi' => $diachi,
+            'sdt'    => $sdt,
+            'ns'     => $ns ?: null,
         ]);
-    }
-    
-    /**
-     * Xử lý cập nhật nhân viên
-     */
-    public function update() {
-        $this->requireRole([1]);
-        $this->verifyCsrf();
-        
-        $manv = $this->input('manv');
-        $tennv = $this->input('tennv');
-        $sdt = $this->input('sdt');
-        $ns = $this->input('ns');
-        
-        $employee = $this->nhanVienModel->findById($manv);
-        
-        if (!$employee) {
-            $this->setFlash('error', 'Không tìm thấy nhân viên');
-            $this->redirect('/nhanvien');
-            return;
+
+        if ($ok !== false) {
+            echo json_encode(['status' => true, 'message' => 'Thêm nhân viên thành công', 'manv' => $manv], JSON_UNESCAPED_UNICODE);
+        } else {
+            // Rollback: xóa tài khoản vừa tạo nếu insert nhanvien thất bại
+            $this->taiKhoanModel->delete($manv);
+            http_response_code(500);
+            echo json_encode(['status' => false, 'message' => 'Thêm nhân viên thất bại'], JSON_UNESCAPED_UNICODE);
         }
-        
+    }
+
+    /**
+     * PUT /api/nhanvien/{id}
+     * Body: tennv, sdt, ns
+     */
+    public function apiUpdate($id) {
+        header('Content-Type: application/json');
+        $input = json_decode(file_get_contents('php://input'), true) ?: [];
+        $tennv = trim($input['tennv'] ?? '');
+        $sdt   = trim($input['sdt']   ?? '');
+        $ns    = trim($input['ns']    ?? '');
+
         if (empty($tennv)) {
-            $this->setFlash('error', 'Vui lòng nhập tên nhân viên');
-            $this->redirect('/nhanvien/edit/' . $manv);
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => 'Tên nhân viên không được để trống'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $data = [
-            'tennv' => $tennv,
-            'sdt' => $sdt,
-            'ns' => $ns ?: null
-        ];
-        
-        $result = $this->nhanVienModel->updateStaff($manv, $data);
-        
-        if ($result) {
-            $this->setFlash('success', 'Cập nhật nhân viên thành công');
-        } else {
-            $this->setFlash('error', 'Cập nhật nhân viên thất bại');
-        }
-        
-        $this->redirect('/nhanvien');
-    }
-    
-    /**
-     * Xóa nhân viên
-     */
-    public function delete($manv) {
-        $this->requireRole([1]);
-        
-        $employee = $this->nhanVienModel->findById($manv);
-        
+
+        $employee = $this->nhanVienModel->findById($id);
         if (!$employee) {
-            $this->setFlash('error', 'Không tìm thấy nhân viên');
-            $this->redirect('/nhanvien');
+            http_response_code(404);
+            echo json_encode(['status' => false, 'message' => 'Không tìm thấy nhân viên'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $result = $this->nhanVienModel->deleteStaff($manv);
-        
-        if ($result) {
-            $this->setFlash('success', 'Xóa nhân viên thành công');
+
+        $ok = $this->nhanVienModel->updateStaff($id, ['tennv' => $tennv, 'sdt' => $sdt, 'ns' => $ns ?: null]);
+        if ($ok !== false) {
+            echo json_encode(['status' => true, 'message' => 'Cập nhật nhân viên thành công'], JSON_UNESCAPED_UNICODE);
         } else {
-            $this->setFlash('error', 'Xóa nhân viên thất bại');
+            http_response_code(500);
+            echo json_encode(['status' => false, 'message' => 'Cập nhật thất bại'], JSON_UNESCAPED_UNICODE);
         }
-        
-        $this->redirect('/nhanvien');
     }
-    
+
     /**
-     * Tìm kiếm nhân viên
+     * DELETE /api/nhanvien/{id}
      */
-    public function search() {
-        $this->requireRole([1]);
-        
-        $keyword = $this->input('q', '');
-        
-        if (empty($keyword)) {
-            $this->redirect('/nhanvien');
+    public function apiDestroy($id) {
+        header('Content-Type: application/json');
+        $employee = $this->nhanVienModel->findById($id);
+        if (!$employee) {
+            http_response_code(404);
+            echo json_encode(['status' => false, 'message' => 'Không tìm thấy nhân viên'], JSON_UNESCAPED_UNICODE);
             return;
         }
-        
-        $employees = $this->nhanVienModel->search($keyword);
-        
-        $this->view('nhanvien/index', [
-            'page_title' => 'Tìm kiếm Nhân viên',
-            'active_nav' => 'nhanvien',
-            'employees' => $employees,
-            'keyword' => $keyword
-        ]);
+
+        $ok = $this->nhanVienModel->deleteStaff($id);
+        if ($ok !== false) {
+            echo json_encode(['status' => true, 'message' => 'Xóa nhân viên thành công'], JSON_UNESCAPED_UNICODE);
+        } else {
+            http_response_code(500);
+            echo json_encode(['status' => false, 'message' => 'Xóa nhân viên thất bại'], JSON_UNESCAPED_UNICODE);
+        }
     }
 }

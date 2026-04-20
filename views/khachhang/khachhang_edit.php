@@ -1,99 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sửa khách hàng</title>
-</head>
-<body>
-    <h1 align="center">SỬA KHÁCH HÀNG</h1>
+<?php
+/**
+ * Sửa Khách hàng
+ */
+session_start();
+require_once "../../includes/api_helper.php";
 
-    <?php
-    include "../../includes/api_helper.php";
+requireLogin();
+requireRole([1, 2]);
 
-    $makh     = $_GET['makh'] ?? $_POST['makh'] ?? 0;
-    $thongbao = "";
+$makh = (int)($_GET['makh'] ?? $_POST['makh'] ?? 0);
 
-    // Xử lý khi submit form (UPDATE)
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $tenkh  = $_POST['txt_tenkh']  ?? '';
-        $diachi = $_POST['txt_diachi'] ?? '';
-        $sdt    = $_POST['txt_sdt']    ?? '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $tenkh  = trim($_POST['txt_tenkh']  ?? '');
+    $diachi = trim($_POST['txt_diachi'] ?? '');
+    $sdt    = trim($_POST['txt_sdt']    ?? '');
 
-        // Gọi API để cập nhật khách hàng
-        $result = callKhachhangAPI([
-            "action" => "update",
-            "makh"   => $makh,
-            "tenkh"  => $tenkh,
-            "diachi" => $diachi,
-            "sdt"    => $sdt
-        ]);
-
-        if ($result && $result['status']) {
-            header("Location: khachhang.php");
-            exit();
-        } else {
-            $thongbao = "Lỗi: " . ($result['message'] ?? 'Không xác định');
-        }
+    if (empty($tenkh)) {
+        setFlash('error', 'Tên khách hàng không được để trống');
+        header("Location: khachhang_edit.php?makh=" . $makh);
+        exit();
     }
 
-    // Lấy thông tin khách hàng để hiển thị form
-    $result = callKhachhangAPI([
-        "action" => "getone",
-        "makh"   => $makh
+    $result = callAPI('PUT', '/api/khachhang/' . $makh, [
+        'tenkh'  => $tenkh,
+        'diachi' => $diachi,
+        'sdt'    => $sdt,
     ]);
 
     if ($result && $result['status']) {
-        $kh     = $result['data'];
-        $tenkh  = $kh['tenkh'];
-        $diachi = $kh['diachi'];
-        $sdt    = $kh['sdt'];
-    } else {
-        echo "<p align='center' style='color:red;'>Không tìm thấy khách hàng</p>";
-        echo "<p align='center'><a href='khachhang.php'>Quay lại</a></p>";
+        setFlash('success', 'Cập nhật khách hàng thành công');
+        header("Location: khachhang.php");
         exit();
     }
-    ?>
+    setFlash('error', $result['message'] ?? 'Cập nhật thất bại');
+    header("Location: khachhang_edit.php?makh=" . $makh);
+    exit();
+}
 
-    <?php if ($thongbao): ?>
-        <p align="center" style="color:red;"><?php echo $thongbao; ?></p>
+$result_kh = callAPI('GET', '/api/khachhang/' . $makh);
+if (!($result_kh && $result_kh['status'])) {
+    setFlash('error', 'Không tìm thấy khách hàng');
+    header("Location: khachhang.php");
+    exit();
+}
+$kh = $result_kh['data'];
+
+$error = getFlash('error');
+
+$page_title = 'Sửa Khách hàng';
+$active_nav = 'khachhang';
+$extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/khachhang.css">
+<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+
+include "../../includes/header.php";
+?>
+
+<main class="container">
+    <h1>SỬA KHÁCH HÀNG</h1>
+
+    <?php if ($error): ?>
+        <div class="dm-alert-error"><?= e($error) ?></div>
     <?php endif; ?>
 
-    <form method="POST" action="" enctype="multipart/form-data">
-        <input type="hidden" name="makh" value="<?php echo $makh; ?>">
-        <table border="1" align="center">
-            <tr>
-                <td colspan="2" align="center">Thông tin khách hàng</td>
-            </tr>
-            <tr>
-                <td>Tên khách hàng:</td>
-                <td>
-                    <input type="text" name="txt_tenkh"
-                           value="<?php echo htmlspecialchars($tenkh); ?>" required>
-                </td>
-            </tr>
-            <tr>
-                <td>Địa chỉ:</td>
-                <td>
-                    <input type="text" name="txt_diachi"
-                           value="<?php echo htmlspecialchars($diachi); ?>">
-                </td>
-            </tr>
-            <tr>
-                <td>Số điện thoại:</td>
-                <td>
-                    <input type="text" name="txt_sdt"
-                           value="<?php echo htmlspecialchars($sdt); ?>">
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2" align="center">
-                    <input type="submit" value="OK">
-                    <input type="reset"  value="Reset">
-                    <input type="button" value="Quay lại" onclick="window.location.href='khachhang.php'">
-                </td>
-            </tr>
-        </table>
+    <form method="POST" action="khachhang_edit.php?makh=<?= e($makh) ?>" class="dm-form">
+
+        <div class="dm-id-badge">
+            <small>Mã khách hàng</small>
+            <strong>#<?= e($kh['makh']) ?> — <?= e($kh['tentk'] ?? '') ?></strong>
+        </div>
+
+        <div class="dm-form-group">
+            <label for="txt_tenkh" class="dm-label">
+                Tên khách hàng <span class="dm-required">*</span>
+            </label>
+            <input type="text" id="txt_tenkh" name="txt_tenkh"
+                   value="<?= e($kh['tenkh']) ?>"
+                   class="dm-input" required>
+        </div>
+
+        <div class="dm-form-group">
+            <label for="txt_diachi" class="dm-label">Địa chỉ</label>
+            <input type="text" id="txt_diachi" name="txt_diachi"
+                   value="<?= e($kh['diachi']) ?>"
+                   class="dm-input">
+        </div>
+
+        <div class="dm-form-group">
+            <label for="txt_sdt" class="dm-label">Số điện thoại</label>
+            <input type="text" id="txt_sdt" name="txt_sdt"
+                   value="<?= e($kh['sdt']) ?>"
+                   class="dm-input">
+        </div>
+
+        <div class="dm-form-actions">
+            <button type="submit" class="dm-btn dm-btn-primary">Cập nhật</button>
+            <a href="khachhang.php" class="dm-btn dm-btn-default">Quay lại</a>
+        </div>
     </form>
-</body>
-</html>
+</main>
+
+<?php include "../../includes/footer.php"; ?>
