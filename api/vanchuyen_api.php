@@ -1,127 +1,145 @@
 <?php
-header("Content-Type: application/json");
+/**
+ * Vận chuyển API - Sử dụng Model
+ */
+header("Content-Type: application/json; charset=utf-8");
 
-// Kết nối database
-include "db.php";
+// Load Model
+require_once dirname(__DIR__) . '/model/VanChuyen.php';
 
 // Đọc dữ liệu từ input
 $data   = json_decode(file_get_contents("php://input"), true);
 $action = isset($data['action']) ? $data['action'] : '';
 
+// Khởi tạo Model
+$model = new VanChuyen();
+
 // XEM TẤT CẢ VẬN CHUYỂN
 if ($action == 'getall') {
-    $sql    = "SELECT vc.*, kh.tenkh, kh.diachi, kh.sdt, dh.ngaydat, dh.trigia
-               FROM vanchuyen vc
-               LEFT JOIN khachhang kh ON vc.makh = kh.makh
-               LEFT JOIN donhang dh ON vc.madh = dh.madh
-               ORDER BY vc.mavc ASC";
-    $result = $conn->query($sql);
+    $shipments = $model->getAllWithDetails();
 
-    if ($result) {
-        $shipments = [];
-        while ($row = $result->fetch_assoc()) {
-            $shipments[] = $row;
-        }
-        echo json_encode([
-            "status"  => true,
-            "message" => "Lấy danh sách vận chuyển thành công",
-            "data"    => $shipments,
-            "total"   => count($shipments)
-        ]);
-    } else {
-        echo json_encode([
-            "status"  => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
-    }
+    echo json_encode([
+        "status"  => true,
+        "message" => "Lấy danh sách vận chuyển thành công",
+        "data"    => $shipments ?: [],
+        "total"   => $shipments ? count($shipments) : 0
+    ], JSON_UNESCAPED_UNICODE);
 }
 
 // XEM CHI TIẾT 1 VẬN CHUYỂN
 else if ($action == 'getone') {
-    $mavc = $data['mavc'];
+    $mavc = isset($data['mavc']) ? (int)$data['mavc'] : 0;
+    $shipment = $model->getOneWithDetails($mavc);
 
-    $sql    = "SELECT vc.*, kh.tenkh, kh.diachi, kh.sdt, dh.ngaydat, dh.trigia
-               FROM vanchuyen vc
-               LEFT JOIN khachhang kh ON vc.makh = kh.makh
-               LEFT JOIN donhang dh ON vc.madh = dh.madh
-               WHERE vc.mavc = '$mavc'";
-    $result = $conn->query($sql);
-
-    if ($result && $result->num_rows > 0) {
+    if ($shipment) {
         echo json_encode([
             "status"  => true,
             "message" => "Lấy thông tin vận chuyển thành công",
-            "data"    => $result->fetch_assoc()
-        ]);
+            "data"    => $shipment
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status"  => false,
             "message" => "Không tìm thấy vận chuyển"
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
+    }
+}
+
+// LẤY VẬN CHUYỂN THEO ĐƠN HÀNG
+else if ($action == 'getbyorder') {
+    $madh = isset($data['madh']) ? (int)$data['madh'] : 0;
+    $shipment = $model->getByOrder($madh);
+
+    if ($shipment) {
+        echo json_encode([
+            "status"  => true,
+            "message" => "Lấy thông tin vận chuyển thành công",
+            "data"    => $shipment
+        ], JSON_UNESCAPED_UNICODE);
+    } else {
+        echo json_encode([
+            "status"  => false,
+            "message" => "Không tìm thấy vận chuyển cho đơn hàng này"
+        ], JSON_UNESCAPED_UNICODE);
     }
 }
 
 // THÊM VẬN CHUYỂN
 else if ($action == 'add') {
-    $madh      = $data['madh'];
-    $makh      = $data['makh'];
-    $ngaygiao  = $data['ngaygiao'];
+    $madh     = isset($data['madh']) ? (int)$data['madh'] : 0;
+    $makh     = isset($data['makh']) ? (int)$data['makh'] : 0;
+    $ngaygiao = isset($data['ngaygiao']) ? trim($data['ngaygiao']) : '';
 
-    $sql = "INSERT INTO vanchuyen (madh, makh, ngaygiao)
-            VALUES ('$madh', '$makh', '$ngaygiao')";
+    if (!$madh || !$makh) {
+        echo json_encode([
+            "status"  => false,
+            "message" => "Mã đơn hàng và mã khách hàng không được để trống"
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
-    if ($conn->query($sql)) {
+    $new_id = $model->add($madh, $makh, $ngaygiao);
+
+    if ($new_id) {
         echo json_encode([
             "status"  => true,
             "message" => "Thêm vận chuyển thành công",
-            "mavc"    => $conn->insert_id
-        ]);
+            "mavc"    => $new_id
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status"  => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
+            "message" => "Lỗi khi thêm vận chuyển"
+        ], JSON_UNESCAPED_UNICODE);
     }
 }
 
 // CẬP NHẬT VẬN CHUYỂN
 else if ($action == 'update') {
-    $mavc      = $data['mavc'];
-    $madh      = $data['madh'];
-    $makh      = $data['makh'];
-    $ngaygiao  = $data['ngaygiao'];
+    $mavc     = isset($data['mavc']) ? (int)$data['mavc'] : 0;
+    $madh     = isset($data['madh']) ? (int)$data['madh'] : 0;
+    $makh     = isset($data['makh']) ? (int)$data['makh'] : 0;
+    $ngaygiao = isset($data['ngaygiao']) ? trim($data['ngaygiao']) : '';
 
-    $sql = "UPDATE vanchuyen
-            SET madh='$madh', makh='$makh', ngaygiao='$ngaygiao'
-            WHERE mavc='$mavc'";
+    if (!$mavc || !$madh || !$makh) {
+        echo json_encode([
+            "status"  => false,
+            "message" => "Thiếu thông tin cần thiết"
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
-    if ($conn->query($sql)) {
+    $result = $model->updateShipping($mavc, $madh, $makh, $ngaygiao);
+
+    if ($result !== false) {
         echo json_encode([
             "status"  => true,
             "message" => "Cập nhật vận chuyển thành công"
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status"  => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
+            "message" => "Lỗi khi cập nhật vận chuyển"
+        ], JSON_UNESCAPED_UNICODE);
     }
 }
 
 // XÓA VẬN CHUYỂN
 else if ($action == 'delete') {
-    $mavc = $data['mavc'];
+    $mavc = isset($data['mavc']) ? (int)$data['mavc'] : 0;
 
-    if ($conn->query("DELETE FROM vanchuyen WHERE mavc = '$mavc'")) {
+    $result = $model->deleteShipping($mavc);
+
+    if ($result !== false) {
         echo json_encode([
             "status"  => true,
             "message" => "Xóa vận chuyển thành công"
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status"  => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
+            "message" => "Lỗi khi xóa vận chuyển"
+        ], JSON_UNESCAPED_UNICODE);
     }
 }
 
@@ -129,9 +147,7 @@ else if ($action == 'delete') {
 else {
     echo json_encode([
         "status"  => false,
-        "message" => "Action không hợp lệ. Sử dụng: getall, getone, add, update, delete"
-    ]);
+        "message" => "Action không hợp lệ. Sử dụng: getall, getone, getbyorder, add, update, delete"
+    ], JSON_UNESCAPED_UNICODE);
 }
-
-$conn->close();
 ?>

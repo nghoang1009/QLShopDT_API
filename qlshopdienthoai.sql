@@ -13,7 +13,7 @@ CREATE TABLE danhmuc (
 CREATE TABLE taikhoan (
   matk INT AUTO_INCREMENT PRIMARY KEY,
   tentk VARCHAR(50) NOT NULL,
-  mk VARCHAR(50) NOT NULL,
+  mk VARCHAR(255) NOT NULL,
   role INT NOT NULL COMMENT '0: Khách hàng, 1: Admin, 2: Nhân viên'
 );
 

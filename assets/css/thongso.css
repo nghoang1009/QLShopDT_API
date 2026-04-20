@@ -1,0 +1,615 @@
+/* ============================================================
+   THONG SO STYLES - Quản lý thông số kỹ thuật sản phẩm
+   ============================================================ */
+
+:root {
+    --ts-primary:  #1a1a2e;
+    --ts-accent:   #e94560;
+    --ts-accent2:  #f5a623;
+    --ts-surface:  #f8f7f4;
+    --ts-card:     #ffffff;
+    --ts-text:     #1a1a2e;
+    --ts-muted:    #7a7a8a;
+    --ts-border:   rgba(0,0,0,0.08);
+    --ts-success:  #10b981;
+    --ts-warning:  #f59e0b;
+    --ts-danger:   #ef4444;
+    --ts-info:     #3b82f6;
+    --ts-radius:   10px;
+    --ts-shadow:   0 8px 28px rgba(0,0,0,0.09);
+}
+
+/* ============================================================
+   LAYOUT & TYPOGRAPHY
+   ============================================================ */
+body {
+    background: var(--ts-surface);
+    font-family: 'Be Vietnam Pro', sans-serif;
+    color: var(--ts-text);
+    line-height: 1.6;
+    padding-bottom: 60px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+h1 {
+    text-align: center;
+    color: var(--ts-primary);
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 40px 0 32px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    position: relative;
+}
+
+h1::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 4px;
+    background: var(--ts-accent);
+    margin: 16px auto 0;
+    border-radius: 2px;
+}
+
+/* ============================================================
+   PRODUCT INFO CARD
+   ============================================================ */
+.ts-product-card {
+    max-width: 1000px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, var(--ts-primary) 0%, #2d2d44 100%);
+    border-radius: var(--ts-radius);
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--ts-shadow);
+}
+
+.ts-product-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ts-product-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--ts-accent);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.ts-product-details h3 {
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+}
+
+.ts-product-details p {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    margin: 0;
+}
+
+.ts-product-badge {
+    background: var(--ts-accent);
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.ts-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    transition: all 0.2s;
+}
+
+.ts-back-link:hover {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+/* ============================================================
+   ALERTS
+   ============================================================ */
+.ts-alert {
+    max-width: 1000px;
+    margin: 0 auto 20px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.ts-alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.ts-alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* ============================================================
+   TABLE STYLES
+   ============================================================ */
+.ts-table-wrapper {
+    max-width: 1000px;
+    margin: 0 auto 40px;
+    background: var(--ts-card);
+    border-radius: var(--ts-radius);
+    box-shadow: var(--ts-shadow);
+    overflow: hidden;
+}
+
+.ts-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ts-table thead tr {
+    background: linear-gradient(135deg, var(--ts-primary) 0%, #2d2d44 100%);
+}
+
+.ts-table th {
+    padding: 16px 20px;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-align: center;
+    border: none;
+}
+
+.ts-table th:first-child {
+    width: 70px;
+}
+
+.ts-table th:nth-child(2) {
+    text-align: left;
+    width: 200px;
+}
+
+.ts-table th:nth-child(3) {
+    text-align: left;
+}
+
+.ts-table th:last-child {
+    width: 180px;
+}
+
+.ts-table tbody tr {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--ts-border);
+    animation: fadeIn 0.3s ease both;
+}
+
+.ts-table tbody tr:hover {
+    background: rgba(233, 69, 96, 0.03);
+}
+
+.ts-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.ts-table td {
+    padding: 14px 20px;
+    color: var(--ts-text);
+    font-size: 14px;
+    text-align: center;
+    border: none;
+}
+
+.ts-table td:first-child {
+    font-weight: 700;
+    color: var(--ts-accent);
+    font-size: 15px;
+}
+
+.ts-table td:nth-child(2) {
+    text-align: left;
+    font-weight: 600;
+    color: var(--ts-primary);
+}
+
+.ts-table td:nth-child(3) {
+    text-align: left;
+    color: var(--ts-text);
+}
+
+/* Action buttons */
+.ts-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.ts-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.ts-btn-edit {
+    background: var(--ts-info);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+}
+
+.ts-btn-edit:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+}
+
+.ts-btn-del {
+    background: var(--ts-danger);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
+}
+
+.ts-btn-del:hover {
+    background: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.ts-btn-add {
+    background: var(--ts-accent);
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 13px;
+    box-shadow: 0 4px 14px rgba(233, 69, 96, 0.3);
+}
+
+.ts-btn-add:hover {
+    background: #c73652;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(233, 69, 96, 0.45);
+}
+
+/* Header cell with add button */
+.ts-header-add {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Table footer */
+.ts-table tfoot td {
+    padding: 16px 20px;
+    background: var(--ts-surface);
+    font-weight: 600;
+    color: var(--ts-muted);
+    font-size: 13px;
+    text-align: right;
+}
+
+/* Empty state */
+.ts-empty-state {
+    text-align: center !important;
+    padding: 60px 20px !important;
+    color: var(--ts-muted) !important;
+}
+
+.ts-empty-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.ts-empty-state strong {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--ts-text);
+}
+
+.ts-empty-state p {
+    font-size: 14px;
+    margin: 0 0 20px;
+    color: var(--ts-muted);
+}
+
+/* ============================================================
+   FORM STYLES
+   ============================================================ */
+.ts-form {
+    max-width: 600px;
+    margin: 0 auto;
+    background: var(--ts-card);
+    padding: 32px;
+    border-radius: var(--ts-radius);
+    box-shadow: var(--ts-shadow);
+}
+
+.ts-form-header {
+    text-align: center;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--ts-border);
+}
+
+.ts-form-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--ts-primary);
+    margin: 0 0 4px;
+}
+
+.ts-form-header p {
+    color: var(--ts-muted);
+    font-size: 14px;
+    margin: 0;
+}
+
+.ts-form-group {
+    margin-bottom: 20px;
+}
+
+.ts-label {
+    display: block;
+    font-weight: 700;
+    color: var(--ts-text);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.ts-required {
+    color: var(--ts-accent);
+}
+
+.ts-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--ts-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.2s;
+    box-sizing: border-box;
+    background: #fff;
+}
+
+.ts-input:focus {
+    outline: none;
+    border-color: var(--ts-accent);
+    box-shadow: 0 0 0 3px rgba(233, 69, 96, 0.1);
+}
+
+.ts-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%237a7a8a' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.ts-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.ts-id-badge {
+    margin-bottom: 24px;
+    padding: 14px;
+    background: var(--ts-surface);
+    border-radius: 8px;
+    border-left: 4px solid var(--ts-accent);
+    text-align: center;
+}
+
+.ts-id-badge small {
+    color: var(--ts-muted);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.ts-id-badge strong {
+    color: var(--ts-text);
+    font-size: 18px;
+}
+
+.ts-product-badge-form {
+    margin-bottom: 24px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, var(--ts-primary) 0%, #2d2d44 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ts-product-badge-form span {
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+}
+
+.ts-product-badge-form strong {
+    color: #fff;
+    font-size: 14px;
+}
+
+.ts-form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    padding-top: 24px;
+    margin-top: 8px;
+    border-top: 2px solid var(--ts-border);
+}
+
+.ts-btn-primary {
+    background: var(--ts-accent);
+    color: #fff;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(233, 69, 96, 0.3);
+}
+
+.ts-btn-primary:hover {
+    background: #c73652;
+    transform: translateY(-2px);
+}
+
+.ts-btn-secondary {
+    background: #6b7280;
+    color: #fff;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ts-btn-secondary:hover {
+    background: #4b5563;
+}
+
+.ts-btn-default {
+    background: #e5e7eb;
+    color: var(--ts-text);
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.ts-btn-default:hover {
+    background: #d1d5db;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ts-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+.ts-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
+.ts-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
+.ts-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
+.ts-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
+.ts-table tbody tr:nth-child(n+6) { animation-delay: 0.3s; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.8rem;
+        margin: 24px 0 20px;
+    }
+
+    .ts-product-card {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .ts-product-info {
+        flex-direction: column;
+    }
+
+    .ts-table-wrapper {
+        margin: 0 16px 40px;
+        overflow-x: auto;
+    }
+
+    .ts-table th,
+    .ts-table td {
+        padding: 12px 10px;
+        font-size: 13px;
+    }
+
+    .ts-actions {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ts-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .ts-form {
+        margin: 0 16px;
+        padding: 20px;
+    }
+
+    .ts-form-actions {
+        flex-direction: column;
+    }
+
+    .ts-btn-primary,
+    .ts-btn-secondary,
+    .ts-btn-default {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .ts-table th:nth-child(2),
+    .ts-table td:nth-child(2) {
+        display: none;
+    }
+}

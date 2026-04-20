@@ -1,137 +1,186 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sửa sản phẩm</title>
-</head>
-<body>
-    <h1 align="center">SỬA SẢN PHẨM</h1>
+<?php
+/**
+ * Sửa sản phẩm
+ */
+session_start();
+require_once "../../includes/api_helper.php";
 
-    <?php
-    session_start();
-    include "../../includes/api_helper.php";
-    requireLogin();
+// Auth check trước output
+requireLogin();
+requireRole([1, 2]); // Admin hoặc Nhân viên
 
-    $masp     = $_GET['masp'] ?? $_POST['masp'] ?? 0;
-    $thongbao = "";
+$masp = $_GET['masp'] ?? $_POST['masp'] ?? 0;
 
-    // Xử lý khi submit form (UPDATE)
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Xử lý ảnh: nếu có upload mới thì dùng tên mới, ngược lại giữ tên cũ
-        $hinhanh = $_POST['hinhanh_cu'];
-        if (!empty($_FILES['img_hinhanh']['name'])) {
-            $datetime = date("Y-m-d_H-i-s_");
-            $hinhanh  = $datetime . basename($_FILES['img_hinhanh']['name']);
-            move_uploaded_file($_FILES['img_hinhanh']['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . "/QLShopDT_API/img/" . $hinhanh);
+// Lấy danh mục để hiển thị dropdown
+$dm_result = callAPI('GET', '/api/danhmuc');
+$danhmucs = ($dm_result && $dm_result['status']) ? $dm_result['data'] : [];
+
+// Xử lý POST trước header
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    
+    $tensp   = trim($_POST['tensp'] ?? '');
+    $gia     = (float)($_POST['gia'] ?? 0);
+    $sl      = (int)($_POST['sl'] ?? 0);
+    $hang    = trim($_POST['hang'] ?? '');
+    $baohanh = (int)($_POST['baohanh'] ?? 0);
+    $ghichu  = trim($_POST['ghichu'] ?? '');
+    $madm    = (int)($_POST['madm'] ?? 0);
+    $hinhanh = $_POST['hinhanh_cu'] ?? '';
+    
+    // Xử lý upload ảnh mới (nếu có)
+    if (isset($_FILES['hinhanh']) && $_FILES['hinhanh']['error'] === UPLOAD_ERR_OK) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $ext = strtolower(pathinfo($_FILES['hinhanh']['name'], PATHINFO_EXTENSION));
+        
+        if (in_array($ext, $allowed)) {
+            $hinhanh_new = 'sp_' . time() . '_' . uniqid() . '.' . $ext;
+            $upload_path = dirname(dirname(__DIR__)) . '/includes/img/' . $hinhanh_new;
+            
+            if (move_uploaded_file($_FILES['hinhanh']['tmp_name'], $upload_path)) {
+                // Xóa ảnh cũ nếu có
+                if (!empty($hinhanh)) {
+                    $old_path = dirname(dirname(__DIR__)) . '/includes/img/' . $hinhanh;
+                    if (file_exists($old_path)) {
+                        @unlink($old_path);
+                    }
+                }
+                $hinhanh = $hinhanh_new;
+            }
         }
-
-        // Gọi API cập nhật sản phẩm
-        $result = callSanphamAPI([
-            "action"  => "update",
-            "masp"    => $masp,
-            "tensp"   => $_POST['txt_tensp'],
-            "gia"     => $_POST['num_gia'],
-            "sl"      => $_POST['num_sl'],
-            "hang"    => $_POST['txt_hang'],
-            "baohanh" => $_POST['txt_baohanh'],
-            "ghichu"  => $_POST['txt_ghichu'],
-            "hinhanh" => $hinhanh,
-            "madm"    => $_POST['txt_madm']
+    }
+    
+    if (empty($tensp)) {
+        setFlash('error', 'Vui lòng nhập tên sản phẩm');
+    } else {
+        $result = callAPI('PUT', '/api/sanpham/' . (int)$masp, [
+            'tensp'   => $tensp,
+            'gia'     => $gia,
+            'sl'      => $sl,
+            'hang'    => $hang,
+            'baohanh' => $baohanh,
+            'ghichu'  => $ghichu,
+            'hinhanh' => $hinhanh,
+            'madm'    => $madm,
         ]);
-
+        
         if ($result && $result['status']) {
+            setFlash('success', 'Cập nhật sản phẩm thành công');
             header("Location: sanpham.php");
             exit();
-        } else {
-            $thongbao = "Lỗi: " . ($result['message'] ?? 'Không xác định');
         }
+        setFlash('error', $result['message'] ?? 'Lỗi không xác định');
     }
+    header("Location: sanpham_edit.php?masp=" . $masp);
+    exit();
+}
 
-    // Lấy thông tin sản phẩm hiện tại để điền vào form
-    $result_sp = callSanphamAPI([
-        "action" => "getone",
-        "masp"   => $masp
-    ]);
+// Lấy thông tin sản phẩm từ RESTful API
+$result = callAPI('GET', '/api/sanpham/' . (int)$masp);
 
-    if (!($result_sp && $result_sp['status'])) {
-        echo "<p align='center' style='color:red;'>Không tìm thấy sản phẩm</p>";
-        echo "<p align='center'><a href='sanpham.php'>Quay lại</a></p>";
-        exit();
-    }
-    $sp = $result_sp['data'];
+if (!$result || !$result['status']) {
+    setFlash('error', 'Không tìm thấy sản phẩm');
+    header("Location: sanpham.php");
+    exit();
+}
 
-    // Lấy danh sách danh mục qua API
-    $result_dm = callDanhmucAPI(['action' => 'getall']);
-    $danhmucs  = ($result_dm && $result_dm['status']) ? $result_dm['data'] : [];
-    ?>
+$sp = $result['data'];
 
-    <?php if ($thongbao): ?>
-        <p align="center" style="color:red;"><?php echo $thongbao; ?></p>
+// Header variables
+$page_title = 'Sửa sản phẩm';
+$active_nav = 'sanpham';
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/sanpham.css?v=' . time() . '">
+<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+
+include "../../includes/header.php";
+
+// Get flash messages
+$error = getFlash('error');
+
+// Đường dẫn ảnh
+$img_base = '/QLShopDT_API/includes/img/';
+?>
+
+<main class="container">
+    <h1>SỬA SẢN PHẨM</h1>
+
+    <?php if ($error): ?>
+        <div class="sp-alert sp-alert-error"><?= e($error) ?></div>
     <?php endif; ?>
 
-    <form method="post" action="sanpham_edit.php?masp=<?php echo $masp; ?>" enctype="multipart/form-data">
-        <input type="hidden" name="masp"        value="<?php echo $masp; ?>">
-        <input type="hidden" name="hinhanh_cu"  value="<?php echo htmlspecialchars($sp['hinhanh']); ?>">
-
-        <table align="center" border="1">
-            <tr>
-                <td colspan="2" align="center">Thông tin sản phẩm</td>
-            </tr>
-            <tr>
-                <td>Danh mục</td>
-                <td>
-                    <select name="txt_madm">
-                        <option value="0">--Chọn danh mục--</option>
-                        <?php foreach ($danhmucs as $dm): ?>
-                            <option value="<?php echo $dm['madm']; ?>"
-                                <?php echo ($dm['madm'] == $sp['madm']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($dm['tendm']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Tên sản phẩm</td>
-                <td><input type="text" name="txt_tensp" value="<?php echo htmlspecialchars($sp['tensp']); ?>" required></td>
-            </tr>
-            <tr>
-                <td>Giá</td>
-                <td><input type="number" name="num_gia" value="<?php echo $sp['gia']; ?>" min="0" required></td>
-            </tr>
-            <tr>
-                <td>Số lượng</td>
-                <td><input type="number" name="num_sl" value="<?php echo $sp['sl']; ?>" min="0" required></td>
-            </tr>
-            <tr>
-                <td>Hãng</td>
-                <td><input type="text" name="txt_hang" value="<?php echo htmlspecialchars($sp['hang']); ?>"></td>
-            </tr>
-            <tr>
-                <td>Bảo hành (tháng)</td>
-                <td><input type="text" name="txt_baohanh" value="<?php echo htmlspecialchars($sp['baohanh']); ?>"></td>
-            </tr>
-            <tr>
-                <td>Hình ảnh hiện tại</td>
-                <td><img src="../img/<?php echo htmlspecialchars($sp['hinhanh']); ?>" width="80"></td>
-            </tr>
-            <tr>
-                <td>Đổi hình ảnh</td>
-                <td><input type="file" name="img_hinhanh" accept="image/*"></td>
-            </tr>
-            <tr>
-                <td>Ghi chú</td>
-                <td><input type="text" name="txt_ghichu" value="<?php echo htmlspecialchars($sp['ghichu']); ?>"></td>
-            </tr>
-            <tr>
-                <td colspan="2" align="center">
-                    <input type="submit" value="OK">
-                    <input type="reset" value="Reset">
-                    <input type="button" value="Quay lại" onclick="window.location.href='sanpham.php'">
-                </td>
-            </tr>
-        </table>
+    <form method="POST" enctype="multipart/form-data" class="sp-form">
+        <?= csrf_field() ?>
+        <input type="hidden" name="masp" value="<?= e($masp) ?>">
+        <input type="hidden" name="hinhanh_cu" value="<?= e($sp['hinhanh']) ?>">
+        
+        <div class="sp-id-badge">
+            <small>Mã sản phẩm</small>
+            <strong>#<?= e($masp) ?></strong>
+        </div>
+        
+        <div class="sp-form-grid">
+            <div class="sp-form-group sp-form-full">
+                <label for="tensp" class="sp-label">
+                    Tên sản phẩm <span class="sp-required">*</span>
+                </label>
+                <input type="text" id="tensp" name="tensp" value="<?= e($sp['tensp']) ?>" class="sp-input" required>
+            </div>
+            
+            <div class="sp-form-group">
+                <label for="gia" class="sp-label">Giá (VNĐ)</label>
+                <input type="number" id="gia" name="gia" value="<?= (float)$sp['gia'] ?>" class="sp-input" min="0">
+            </div>
+            
+            <div class="sp-form-group">
+                <label for="sl" class="sp-label">Số lượng</label>
+                <input type="number" id="sl" name="sl" value="<?= (int)$sp['sl'] ?>" class="sp-input" min="0">
+            </div>
+            
+            <div class="sp-form-group">
+                <label for="madm" class="sp-label">Danh mục</label>
+                <select id="madm" name="madm" class="sp-input sp-select">
+                    <option value="0">-- Chọn danh mục --</option>
+                    <?php foreach ($danhmucs as $dm): ?>
+                        <option value="<?= $dm['madm'] ?>" <?= ($dm['madm'] == $sp['madm']) ? 'selected' : '' ?>>
+                            <?= e($dm['tendm']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="sp-form-group">
+                <label for="hang" class="sp-label">Hãng sản xuất</label>
+                <input type="text" id="hang" name="hang" value="<?= e($sp['hang']) ?>" class="sp-input">
+            </div>
+            
+            <div class="sp-form-group">
+                <label for="baohanh" class="sp-label">Bảo hành (tháng)</label>
+                <input type="number" id="baohanh" name="baohanh" value="<?= (int)$sp['baohanh'] ?>" class="sp-input" min="0">
+            </div>
+            
+            <div class="sp-form-group">
+                <label for="hinhanh" class="sp-label">Hình ảnh mới</label>
+                <input type="file" id="hinhanh" name="hinhanh" class="sp-input sp-file" accept="image/*">
+                <?php if (!empty($sp['hinhanh'])): ?>
+                    <div class="sp-current-img">
+                        <small>Ảnh hiện tại:</small>
+                        <img src="<?= $img_base . e($sp['hinhanh']) ?>" alt="Current">
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <div class="sp-form-group sp-form-full">
+                <label for="ghichu" class="sp-label">Ghi chú</label>
+                <textarea id="ghichu" name="ghichu" class="sp-input sp-textarea" rows="3"><?= e($sp['ghichu']) ?></textarea>
+            </div>
+        </div>
+        
+        <div class="sp-form-actions">
+            <button type="submit" class="sp-btn sp-btn-primary">Cập nhật</button>
+            <button type="reset" class="sp-btn sp-btn-secondary">Đặt lại</button>
+            <a href="sanpham.php" class="sp-btn sp-btn-default">Quay lại</a>
+        </div>
     </form>
-</body>
-</html>
+</main>
+
+<?php include "../../includes/footer.php"; ?>

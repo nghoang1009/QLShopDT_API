@@ -1,11 +1,6 @@
 <?php
 session_start();
 
-$page_title = 'Trang Chủ';
-$active_nav = 'trangchu';
-$extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/trangchu.css">';
-
-require_once "../includes/header.php";
 require_once "../includes/footer.php";
 require_once "../includes/api_helper.php";
 
@@ -17,7 +12,7 @@ $project_root = rtrim(str_replace($doc_root, '', $current_dir), '/');
 define('IMG_BASE_URL', $project_root . '/includes/img/');
 
 // ── Lấy danh sách danh mục qua API ──────────────────────────
-$result_dm  = callDanhmucAPI(['action' => 'getall']);
+$result_dm  = callAPI('GET', '/api/danhmuc');
 $danhmucs   = ($result_dm && $result_dm['status']) ? $result_dm['data'] : [];
 
 // ── Đọc tham số tìm kiếm từ URL ─────────────────────────────
@@ -27,9 +22,8 @@ $section_title = 'SẢN PHẨM NỔI BẬT';
 
 // ── Gọi API lấy sản phẩm ────────────────────────────────────
 if ($search !== '' || ($madm_filter !== '' && $madm_filter != '0')) {
-    // Có từ khóa hoặc lọc danh mục → gọi search_api.php
-    $result_sp = callSearchAPI([
-        'action'  => 'search',
+    // Có từ khóa hoặc lọc danh mục → gọi /api/sanpham
+    $result_sp = callAPI('GET', '/api/sanpham', [
         'keyword' => $search,
         'madm'    => $madm_filter
     ]);
@@ -52,7 +46,7 @@ if ($search !== '' || ($madm_filter !== '' && $madm_filter != '0')) {
     }
 } else {
     // Không có điều kiện → lấy tất cả (giới hạn 12)
-    $result_sp = callSanphamAPI(['action' => 'getall']);
+    $result_sp = callAPI('GET', '/api/sanpham');
 }
 
 $sanpham_list = ($result_sp && $result_sp['status']) ? $result_sp['data'] : [];
@@ -61,6 +55,12 @@ $sanpham_list = ($result_sp && $result_sp['status']) ? $result_sp['data'] : [];
 if ($search === '' && ($madm_filter === '' || $madm_filter == '0')) {
     $sanpham_list = array_slice(array_reverse($sanpham_list), 0, 12);
 }
+
+// ── Tất cả API calls xong, giờ mới xuất HTML ─────────────────
+$page_title = 'Trang Chủ';
+$active_nav = 'trangchu';
+$extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/trangchu.css">';
+require_once "../includes/header.php";
 ?>
 
 <!-- ===== HERO (chỉ hiện khi không có điều kiện lọc/tìm kiếm) ===== -->

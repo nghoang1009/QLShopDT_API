@@ -1,134 +1,157 @@
 <?php
-header("Content-Type: application/json");
+/**
+ * Nhân viên API - Sử dụng Model
+ */
+header("Content-Type: application/json; charset=utf-8");
 
-// Kết nối database
-include "db.php";
+// Load Model
+require_once dirname(__DIR__) . '/model/NhanVien.php';
 
 // Đọc dữ liệu từ input
 $data = json_decode(file_get_contents("php://input"), true);
 $action = isset($data['action']) ? $data['action'] : '';
 
+// Khởi tạo Model
+$model = new NhanVien();
+
 // XEM TẤT CẢ NHÂN VIÊN
-if($action == 'getall') {
-    $sql = "SELECT * FROM nhanvien ORDER BY manv ASC";
-    $result = $conn->query($sql);
+if ($action == 'getall') {
+    $employees = $model->getAll();
     
-    if($result) {
-        $employees = [];
-        while($row = $result->fetch_assoc()) {
-            $employees[] = $row;
-        }
-        
-        echo json_encode([
-            "status" => true,
-            "message" => "Lấy danh sách nhân viên thành công",
-            "data" => $employees,
-            "total" => count($employees)
-        ]);
-    } else {
-        echo json_encode([
-            "status" => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
-    }
+    echo json_encode([
+        "status" => true,
+        "message" => "Lấy danh sách nhân viên thành công",
+        "data" => $employees ?: [],
+        "total" => $employees ? count($employees) : 0
+    ], JSON_UNESCAPED_UNICODE);
 }
 
 // XEM 1 NHÂN VIÊN
-else if($action == 'getone') {
-    $manv = $data['manv'];
+else if ($action == 'getone') {
+    $manv = isset($data['manv']) ? (int)$data['manv'] : 0;
+    $employee = $model->findById($manv);
     
-    $sql = "SELECT * FROM nhanvien WHERE manv = '$manv'";
-    $result = $conn->query($sql);
-    
-    if($result && $result->num_rows > 0) {
-        $employee = $result->fetch_assoc();
-        
+    if ($employee) {
         echo json_encode([
             "status" => true,
             "message" => "Lấy thông tin nhân viên thành công",
             "data" => $employee
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status" => false,
             "message" => "Không tìm thấy nhân viên"
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     }
 }
 
 // THÊM NHÂN VIÊN
-else if($action == 'add') {
-    $tennv = $data['tennv'];
-    $diachi = $data['diachi'] ?? '';
-    $sdt = $data['sdt'] ?? '';
-    $ns = $data['ns'] ?? '';
+else if ($action == 'add') {
+    $tennv = isset($data['tennv']) ? trim($data['tennv']) : '';
+    $diachi = isset($data['diachi']) ? trim($data['diachi']) : '';
+    $sdt = isset($data['sdt']) ? trim($data['sdt']) : '';
+    $ns = isset($data['ns']) ? trim($data['ns']) : '';
     
-    $sql = "INSERT INTO nhanvien (tennv, diachi, sdt, ns) VALUES ('$tennv', '$diachi', '$sdt', '$ns')";
+    if (empty($tennv)) {
+        echo json_encode([
+            "status" => false,
+            "message" => "Tên nhân viên không được để trống"
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     
-    if($conn->query($sql)) {
-        $new_id = $conn->insert_id;
-        
+    $new_id = $model->add([
+        'manv' => null,
+        'tennv' => $tennv,
+        'sdt' => $sdt,
+        'ns' => $ns ?: null
+    ]);
+    
+    if ($new_id) {
         echo json_encode([
             "status" => true,
             "message" => "Thêm nhân viên thành công",
             "manv" => $new_id
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status" => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
+            "message" => "Lỗi khi thêm nhân viên"
+        ], JSON_UNESCAPED_UNICODE);
     }
 }
 
 // CẬP NHẬT NHÂN VIÊN
-else if($action == 'update') {
-    $manv = $data['manv'];
-    $tennv = $data['tennv'];
-    $diachi = $data['diachi'] ?? '';
-    $sdt = $data['sdt'] ?? '';
-    $ns = $data['ns'] ?? '';
+else if ($action == 'update') {
+    $manv = isset($data['manv']) ? (int)$data['manv'] : 0;
+    $tennv = isset($data['tennv']) ? trim($data['tennv']) : '';
+    $diachi = isset($data['diachi']) ? trim($data['diachi']) : '';
+    $sdt = isset($data['sdt']) ? trim($data['sdt']) : '';
+    $ns = isset($data['ns']) ? trim($data['ns']) : '';
     
-    $sql = "UPDATE nhanvien SET tennv = '$tennv', diachi = '$diachi', sdt = '$sdt', ns = '$ns' WHERE manv = '$manv'";
+    if (empty($tennv)) {
+        echo json_encode([
+            "status" => false,
+            "message" => "Tên nhân viên không được để trống"
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
     
-    if($conn->query($sql)) {
+    $result = $model->updateStaff($manv, [
+        'tennv' => $tennv,
+        'sdt' => $sdt,
+        'ns' => $ns ?: null
+    ]);
+    
+    if ($result !== false) {
         echo json_encode([
             "status" => true,
             "message" => "Cập nhật nhân viên thành công"
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status" => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
+            "message" => "Lỗi khi cập nhật nhân viên"
+        ], JSON_UNESCAPED_UNICODE);
     }
 }
 
 // XÓA NHÂN VIÊN
-else if($action == 'delete') {
-    $manv = $data['manv'];
+else if ($action == 'delete') {
+    $manv = isset($data['manv']) ? (int)$data['manv'] : 0;
     
-    $sql = "DELETE FROM nhanvien WHERE manv = '$manv'";
+    $result = $model->deleteStaff($manv);
     
-    if($conn->query($sql)) {
+    if ($result !== false) {
         echo json_encode([
             "status" => true,
             "message" => "Xóa nhân viên thành công"
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
     } else {
         echo json_encode([
             "status" => false,
-            "message" => "Lỗi: " . $conn->error
-        ]);
+            "message" => "Lỗi khi xóa nhân viên"
+        ], JSON_UNESCAPED_UNICODE);
     }
+}
+
+// TÌM KIẾM NHÂN VIÊN
+else if ($action == 'search') {
+    $keyword = isset($data['keyword']) ? trim($data['keyword']) : '';
+    $employees = $model->search($keyword);
+    
+    echo json_encode([
+        "status" => true,
+        "message" => "Tìm kiếm nhân viên thành công",
+        "data" => $employees ?: [],
+        "total" => $employees ? count($employees) : 0
+    ], JSON_UNESCAPED_UNICODE);
 }
 
 else {
     echo json_encode([
         "status" => false,
-        "message" => "Action không hợp lệ. Sử dụng: getall, getone, add, update, delete"
-    ]);
+        "message" => "Action không hợp lệ. Sử dụng: getall, getone, add, update, delete, search"
+    ], JSON_UNESCAPED_UNICODE);
 }
-
-$conn->close();
 ?>

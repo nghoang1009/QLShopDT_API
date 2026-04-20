@@ -1,31 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xóa thông số</title>
-</head>
-<body>
-    <?php
-    include "../../includes/api_helper.php";
+<?php
+/**
+ * Xóa thông số kỹ thuật
+ */
+session_start();
+require_once "../../includes/api_helper.php";
 
-    $mats = $_GET['mats'] ?? 0;
-    $masp = $_GET['masp'] ?? 0;
+// Auth check
+requireLogin();
+requireRole([1, 2]); // Admin hoặc Nhân viên
 
-    // Gọi API để xóa thông số
-    $result = callThongsoAPI([
-        "action" => "delete",
-        "mats"   => $mats
-    ]);
+$mats = $_GET['mats'] ?? 0;
+$masp = $_GET['masp'] ?? 0;
 
-    if ($result && $result['status']) {
-        header("Location: thongso.php?masp=$masp");
-        exit();
-    } else {
-        echo "<h3>Xóa thất bại</h3>";
-        echo "<p>" . ($result['message'] ?? 'Lỗi không xác định') . "</p>";
-        echo "<p><a href='thongso.php?masp=$masp'>Quay lại</a></p>";
-    }
-    ?>
-</body>
-</html>
+if (empty($mats)) {
+    setFlash('error', 'Không tìm thấy thông số cần xóa');
+    header("Location: thongso.php?masp=$masp");
+    exit();
+}
+
+// Gọi API để xóa thông số
+$result = callAPI('DELETE', '/api/thongso/' . $mats);
+
+if ($result && $result['status']) {
+    setFlash('success', 'Xóa thông số thành công');
+} else {
+    setFlash('error', $result['message'] ?? 'Xóa thông số thất bại');
+}
+
+header("Location: thongso.php?masp=$masp");
+exit();

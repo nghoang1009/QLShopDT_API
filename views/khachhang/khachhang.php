@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['username'])) {
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit();
 }
 $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
@@ -9,10 +9,11 @@ $page_title = 'Quản lý Khách hàng';
 $active_nav = 'khachhang';
 include "../../includes/header.php";
 include "../../includes/footer.php";
-include "../../model/khachhang_model.php";
+include "../../includes/api_helper.php";
 
-// Lấy danh sách khách hàng từ model
-$customers = KhachHang::getAllCustomers();
+// Lấy danh sách khách hàng từ API
+$result = callKhachhangAPI(['action' => 'getall']);
+$customers = ($result && $result['status']) ? $result['data'] : [];
 $tong_bg   = count($customers);
 ?>
 <html>

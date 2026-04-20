@@ -8,29 +8,27 @@ $active_nav = 'vanchuyen';
 $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
 include "../../includes/header.php";
 include "../../includes/footer.php";
-include "../../model/vanchuyen_model.php";
 
 // Kiểm tra quyền chỉnh sửa
 $can_edit = isAdminOrStaff();
 
-// Lấy danh sách vận chuyển từ model
-$makh = null;
+// Lấy danh sách vận chuyển từ API
 if (!isAdminOrStaff()) {
-    // Khách hàng: lấy makh từ database
-    include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+    // Khách hàng: lấy makh từ API
     $username = $_SESSION['username'];
-    $sql_get_makh = "SELECT kh.makh FROM taikhoan tk
-                     JOIN khachhang kh ON tk.matk = kh.makh
-                     WHERE tk.tentk = '$username'";
-    $result_makh = mysqli_query($conn, $sql_get_makh);
-    if (mysqli_num_rows($result_makh) > 0) {
-        $row_makh = mysqli_fetch_object($result_makh);
-        $makh = $row_makh->makh;
+    $kh_result = callKhachhangAPI(['action' => 'getbyusername', 'username' => $username]);
+    if ($kh_result && $kh_result['status']) {
+        $makh = $kh_result['makh'];
+        $result = callVanchuyenAPI(['action' => 'getbycustomer', 'makh' => $makh]);
+        $vanchuyen_list = ($result && $result['status']) ? $result['data'] : [];
+    } else {
+        $vanchuyen_list = [];
     }
-    mysqli_close($conn);
+} else {
+    // Admin/Nhân viên: lấy tất cả
+    $result = callVanchuyenAPI(['action' => 'getall']);
+    $vanchuyen_list = ($result && $result['status']) ? $result['data'] : [];
 }
-
-$vanchuyen_list = VanChuyen::getAllShipments($makh);
 ?>
 <html>
     <link rel="stylesheet" href="/QLShopDT_API/assets/css/vanchuyen.css">

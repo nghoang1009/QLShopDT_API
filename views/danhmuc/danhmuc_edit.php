@@ -1,71 +1,90 @@
 <?php
+/**
+ * Sửa danh mục
+ */
 session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once "../../includes/api_helper.php";
 
-$page_title = 'Sửa danh mục';
-$active_nav = 'danhmuc';
-$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/danhmuc.css">';
-include "../../includes/header.php";
-include "../../model/danhmuc_model.php";
+// Auth check trước output
+requireLogin();
+requireRole([1, 2]); // Admin hoặc Nhân viên
 
 $madm = $_GET['madm'] ?? $_POST['madm'] ?? 0;
-$thongbao = "";
 
+// Xử lý POST trước header
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $result = DanhMuc::update($madm, $_POST['txt_tendm'] ?? '');
+    verify_csrf();
     
-    if ($result && $result['status']) {
-        header("Location: danhmuc.php");
-        exit();
+    $tendm = trim($_POST['txt_tendm'] ?? '');
+    
+    if (empty($tendm)) {
+        setFlash('error', 'Vui lòng nhập tên danh mục');
+    } else {
+        $result = callAPI('PUT', '/api/danhmuc/' . (int)$madm, ['tendm' => $tendm]);
+        
+        if ($result && $result['status']) {
+            setFlash('success', 'Cập nhật danh mục thành công');
+            header("Location: danhmuc.php");
+            exit();
+        }
+        setFlash('error', $result['message'] ?? 'Lỗi không xác định');
     }
-    $thongbao = $result['message'] ?? 'Lỗi không xác định';
-}
-
-$result = DanhMuc::getOne($madm);
-
-if ($result && $result['status']) {
-    $tendm = $result['data']['tendm'];
-} else {
-    echo '<div class="dm-error-box">';
-    echo '<p class="dm-error-title">Không tìm thấy danh mục</p>';
-    echo '<a href="danhmuc.php" class="dm-link-back">Quay lại danh sách</a>';
-    echo '</div></body></html>';
+    header("Location: danhmuc_edit.php?madm=" . $madm);
     exit();
 }
+
+// Lấy thông tin danh mục từ RESTful API
+$result = callAPI('GET', '/api/danhmuc/' . (int)$madm);
+
+if (!$result || !$result['status']) {
+    setFlash('error', 'Không tìm thấy danh mục');
+    header("Location: danhmuc.php");
+    exit();
+}
+
+$tendm = $result['data']['tendm'];
+
+// Header variables
+$page_title = 'Sửa danh mục';
+$active_nav = 'danhmuc';
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/danhmuc.css">
+<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+
+include "../../includes/header.php";
+
+// Get flash messages
+$error = getFlash('error');
 ?>
 
-<h1>SỬA DANH MỤC</h1>
+<main class="container">
+    <h1>SỬA DANH MỤC</h1>
 
-<?php if($thongbao): ?>
-    <div class="dm-alert-error">
-        <?php echo htmlspecialchars($thongbao); ?>
-    </div>
-<?php endif; ?>
+    <?php if ($error): ?>
+        <div class="dm-alert-error"><?= e($error) ?></div>
+    <?php endif; ?>
 
-<form method="POST" action="" class="dm-form">
-    <input type="hidden" name="madm" value="<?php echo $madm; ?>">
-    
-    <div class="dm-id-badge">
-        <small>Mã danh mục</small>
-        <strong>#<?php echo htmlspecialchars($madm); ?></strong>
-    </div>
-    
-    <div class="dm-form-group">
-        <label for="txt_tendm" class="dm-label">
-            Tên danh mục <span class="dm-required">*</span>
-        </label>
-        <input type="text" id="txt_tendm" name="txt_tendm" value="<?php echo htmlspecialchars($tendm); ?>" class="dm-input" required>
-    </div>
-    
-    <div class="dm-form-actions">
-        <button type="submit" class="dm-btn dm-btn-primary">Cập nhật</button>
-        <button type="reset" class="dm-btn dm-btn-secondary">Đặt lại</button>
-        <button type="button" onclick="location.href='danhmuc.php'" class="dm-btn dm-btn-default">Quay lại</button>
-    </div>
-</form>
+    <form method="POST" class="dm-form">
+        <?= csrf_field() ?>
+        <input type="hidden" name="madm" value="<?= e($madm) ?>">
+        
+        <div class="dm-id-badge">
+            <small>Mã danh mục</small>
+            <strong>#<?= e($madm) ?></strong>
+        </div>
+        
+        <div class="dm-form-group">
+            <label for="txt_tendm" class="dm-label">
+                Tên danh mục <span class="dm-required">*</span>
+            </label>
+            <input type="text" id="txt_tendm" name="txt_tendm" value="<?= e($tendm) ?>" class="dm-input" required>
+        </div>
+        
+        <div class="dm-form-actions">
+            <button type="submit" class="dm-btn dm-btn-primary">Cập nhật</button>
+            <button type="reset" class="dm-btn dm-btn-secondary">Đặt lại</button>
+            <a href="danhmuc.php" class="dm-btn dm-btn-default">Quay lại</a>
+        </div>
+    </form>
+</main>
 
-</body>
-</html>
+<?php include "../../includes/footer.php"; ?>

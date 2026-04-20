@@ -1,27 +1,30 @@
 <?php
+/**
+ * Xóa danh mục
+ */
 session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login.php");
-    exit();
-}
+require_once "../../includes/api_helper.php";
 
-include "../../model/danhmuc_model.php";
+// Auth check
+requireLogin();
+requireRole([1, 2]); // Admin hoặc Nhân viên
 
-$result = DanhMuc::delete($_GET['madm'] ?? 0);
+$madm = $_GET['madm'] ?? 0;
 
-if ($result && $result['status']) {
+if (empty($madm)) {
+    setFlash('error', 'Không tìm thấy danh mục');
     header("Location: danhmuc.php");
     exit();
-} else {
-    $page_title = 'Lỗi xóa danh mục';
-    $active_nav = 'danhmuc';
-    $extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/danhmuc.css">';
-    include "../../includes/header.php";
-    
-    echo '<div class="dm-error-box">';
-    echo '<h3 class="dm-error-title">Xóa thất bại</h3>';
-    echo '<p class="dm-error-text">' . htmlspecialchars($result['message'] ?? 'Lỗi không xác định') . '</p>';
-    echo '<a href="danhmuc.php" class="dm-btn dm-btn-primary">Quay lại danh sách</a>';
-    echo '</div></body></html>';
 }
-?>
+
+// Gọi RESTful API xóa
+$result = callAPI('DELETE', '/api/danhmuc/' . (int)$madm);
+
+if ($result && $result['status']) {
+    setFlash('success', 'Xóa danh mục thành công');
+} else {
+    setFlash('error', $result['message'] ?? 'Xóa danh mục thất bại');
+}
+
+header("Location: danhmuc.php");
+exit();

@@ -1,87 +1,102 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thêm thông số</title>
-</head>
-<body>
-    <h1 align="center">THÊM THÔNG SỐ</h1>
+<?php
+/**
+ * Thêm thông số kỹ thuật mới
+ */
+session_start();
+require_once "../../includes/api_helper.php";
 
-    <?php
-    include "../../includes/api_helper.php";
+// Auth check
+requireLogin();
+requireRole([1, 2]); // Admin hoặc Nhân viên
 
-    // Lấy masp từ URL để pre-select và quay lại đúng trang
-    $masp_url = $_GET['masp'] ?? '';
-    $thongbao = "";
+$masp = $_GET['masp'] ?? $_POST['masp'] ?? '';
 
-    // Xử lý khi submit form
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $tents  = $_POST['txt_tents']  ?? '';
-        $masp   = $_POST['masp']       ?? '';
-        $giatri = $_POST['txt_giatri'] ?? '';
+// Lấy thông tin sản phẩm
+$sp_result = callAPI('GET', '/api/sanpham/' . $masp);
+$sanpham = ($sp_result && $sp_result['status']) ? $sp_result['data'] : null;
 
-        // Gọi API để thêm thông số
-        $result = callThongsoAPI([
-            "action" => "add",
-            "tents"  => $tents,
-            "masp"   => $masp,
-            "giatri" => $giatri
+if (!$sanpham) {
+    setFlash('error', 'Không tìm thấy sản phẩm');
+    header("Location: ../sanpham/sanpham.php");
+    exit();
+}
+
+// Xử lý POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+    
+    $tents  = trim($_POST['tents'] ?? '');
+    $giatri = trim($_POST['giatri'] ?? '');
+    $masp   = $_POST['masp'] ?? '';
+    
+    if (empty($tents)) {
+        setFlash('error', 'Vui lòng nhập tên thông số');
+    } else {
+        $result = callAPI('POST', '/api/thongso', [
+            'tents'  => $tents,
+            'masp'   => $masp,
+            'giatri' => $giatri
         ]);
-
+        
         if ($result && $result['status']) {
+            setFlash('success', 'Thêm thông số thành công');
             header("Location: thongso.php?masp=$masp");
             exit();
-        } else {
-            $thongbao = "Lỗi: " . ($result['message'] ?? 'Không xác định');
         }
+        setFlash('error', $result['message'] ?? 'Lỗi không xác định');
     }
+    header("Location: thongso_add.php?masp=$masp");
+    exit();
+}
 
-    // Gọi API lấy danh sách sản phẩm cho dropdown
-    $spResult = callThongsoAPI(['action' => 'getsanpham']);
-    $sanphams = ($spResult && $spResult['status']) ? $spResult['data'] : [];
-    ?>
+// Flash messages
+$error = getFlash('error');
 
-    <?php if ($thongbao): ?>
-        <p align="center" style="color:red;"><?php echo $thongbao; ?></p>
+// Header variables
+$page_title = 'Thêm thông số';
+$active_nav = 'sanpham';
+$extra_css = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/thongso.css?v=' . time() . '">
+<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+
+include "../../includes/header.php";
+?>
+
+<main class="container">
+    <h1>THÊM THÔNG SỐ</h1>
+    
+    <?php if ($error): ?>
+        <div class="ts-alert ts-alert-error"><?= e($error) ?></div>
     <?php endif; ?>
-
-    <form method="POST" action="" enctype="multipart/form-data">
-        <table align="center" border="1">
-            <tr>
-                <td colspan="2" align="center">Thông tin thông số</td>
-            </tr>
-            <tr>
-                <td>Tên thông số</td>
-                <td><input type="text" name="txt_tents" required></td>
-            </tr>
-            <tr>
-                <td>Sản phẩm</td>
-                <td>
-                    <select name="masp">
-                        <option value="0">--Chọn sản phẩm--</option>
-                        <?php foreach ($sanphams as $sp): ?>
-                            <option value="<?php echo $sp['masp']; ?>"
-                                <?php echo ($sp['masp'] == $masp_url) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($sp['tensp']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Giá trị</td>
-                <td><input type="text" name="txt_giatri"></td>
-            </tr>
-            <tr>
-                <td colspan="2" align="center">
-                    <input type="submit" value="OK">
-                    <input type="reset"  value="Reset">
-                    <input type="button" value="Quay lại"
-                           onclick="window.location.href='thongso.php?masp=<?php echo $masp_url; ?>'">
-                </td>
-            </tr>
-        </table>
+    
+    <form method="POST" class="ts-form">
+        <?= csrf_field() ?>
+        <input type="hidden" name="masp" value="<?= e($masp) ?>">
+        
+        <div class="ts-product-badge-form">
+            <span>Sản phẩm:</span>
+            <strong><?= e($sanpham['tensp']) ?> (#<?= e($masp) ?>)</strong>
+        </div>
+        
+        <div class="ts-form-group">
+            <label for="tents" class="ts-label">
+                Tên thông số <span class="ts-required">*</span>
+            </label>
+            <input type="text" id="tents" name="tents" class="ts-input" 
+                   placeholder="VD: Màn hình, CPU, RAM..." required>
+        </div>
+        
+        <div class="ts-form-group">
+            <label for="giatri" class="ts-label">Giá trị</label>
+            <textarea id="giatri" name="giatri" class="ts-input ts-textarea" rows="3"
+                      placeholder="VD: 6.7 inch AMOLED, Snapdragon 8 Gen 2..."></textarea>
+        </div>
+        
+        <div class="ts-form-actions">
+            <button type="submit" class="ts-btn-primary">Lưu</button>
+            <button type="reset" class="ts-btn-secondary">Đặt lại</button>
+            <a href="thongso.php?masp=<?= $masp ?>" class="ts-btn-default">Quay lại</a>
+        </div>
     </form>
-</body>
-</html>
+</main>
+
+<?php include "../../includes/footer.php"; ?>

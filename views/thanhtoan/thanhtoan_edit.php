@@ -1,9 +1,8 @@
 <?php
-include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
-require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/config/database.php');
 session_start();
 if (!isset($_SESSION['username'])) {
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit();
 }
 

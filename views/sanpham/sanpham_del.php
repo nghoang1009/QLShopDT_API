@@ -1,32 +1,30 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xóa sản phẩm</title>
-</head>
-<body>
-    <?php
-    session_start();
-    include "../../includes/api_helper.php";
-    requireLogin();
+<?php
+/**
+ * Xóa sản phẩm
+ */
+session_start();
+require_once "../../includes/api_helper.php";
 
-    $masp = $_GET['masp'] ?? 0;
+// Auth check
+requireLogin();
+requireRole([1, 2]); // Admin hoặc Nhân viên
 
-    // Gọi API xóa sản phẩm
-    $result = callSanphamAPI([
-        "action" => "delete",
-        "masp"   => $masp
-    ]);
+$masp = $_GET['masp'] ?? 0;
 
-    if ($result && $result['status']) {
-        header("Location: sanpham.php");
-        exit();
-    } else {
-        echo "<h3>Xóa thất bại</h3>";
-        echo "<p>" . ($result['message'] ?? 'Lỗi không xác định') . "</p>";
-        echo '<a href="sanpham.php">Quay lại</a>';
-    }
-    ?>
-</body>
-</html>
+if (empty($masp)) {
+    setFlash('error', 'Không tìm thấy sản phẩm');
+    header("Location: sanpham.php");
+    exit();
+}
+
+// Gọi RESTful API xóa
+$result = callAPI('DELETE', '/api/sanpham/' . (int)$masp);
+
+if ($result && $result['status']) {
+    setFlash('success', 'Xóa sản phẩm thành công');
+} else {
+    setFlash('error', $result['message'] ?? 'Xóa sản phẩm thất bại');
+}
+
+header("Location: sanpham.php");
+exit();

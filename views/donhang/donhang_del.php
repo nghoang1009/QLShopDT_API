@@ -1,25 +1,28 @@
 <?php
+/**
+ * Xóa Đơn hàng
+ */
 session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login.php");
+require_once "../../includes/api_helper.php";
+
+requireLogin();
+requireRole([1, 2]);
+
+$madh = (int)($_GET['madh'] ?? 0);
+
+if (!$madh) {
+    setFlash('error', 'Không tìm thấy đơn hàng');
+    header("Location: donhang.php");
     exit();
 }
 
-include "../../includes/api_helper.php";
-
-$madh = $_GET['madh'] ?? 0;
-
-// Gọi API xóa đơn hàng
-$result = callDonhangAPI([
-    "action" => "delete",
-    "madh"   => $madh
-]);
+$result = callAPI('DELETE', '/api/donhang/' . $madh);
 
 if ($result && $result['status']) {
-    header("Location: donhang.php");
+    setFlash('success', 'Xóa đơn hàng #' . $madh . ' thành công');
 } else {
-    echo "<p align='center' style='color:red;'>Lỗi: " . ($result['message'] ?? 'Không xác định') . "</p>";
-    echo "<p align='center'><a href='donhang.php'>Quay lại</a></p>";
+    setFlash('error', $result['message'] ?? 'Xóa đơn hàng thất bại');
 }
+
+header("Location: donhang.php");
 exit();
-?>

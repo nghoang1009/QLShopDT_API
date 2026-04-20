@@ -1,12 +1,12 @@
 <?php
 session_start();
 if (!isset($_SESSION['username'])) {
-    header("Location: ../login.php");
+    header("Location: ../auth/login.php");
     exit();
 }
 
 // Lấy thông tin role từ header (đã xử lý trong header.php)
-include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+include "../../includes/api_helper.php";
 
 $role = $_SESSION['role'] ?? 0;
 
@@ -22,10 +22,10 @@ $page_title = 'Quản lý Nhân viên';
 $active_nav = 'nhanvien';
 include "../../includes/header.php";
 include "../../includes/footer.php";
-include "../../model/nhanvien_model.php";
 
-// Lấy danh sách nhân viên từ model
-$employees = NhanVien::getAllEmployees();
+// Lấy danh sách nhân viên từ API
+$result = callNhanVienAPI(['action' => 'getall']);
+$employees = ($result && $result['status']) ? $result['data'] : [];
 $tong_bg = count($employees);
 ?>
 <html>

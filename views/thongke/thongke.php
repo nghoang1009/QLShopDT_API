@@ -10,69 +10,83 @@
 </head>
 <body>
     <?php
-    include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+    session_start();
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/config/database.php';
     include "../../includes/header.php";
-
+    include "../../includes/api_helper.php";
+    
+    $db = Database::getInstance();
+    
+    // Build query với prepared statements
     $sql_select = "SELECT tt.*, dh.ngaydat, kh.tenkh, nv.tennv 
                    FROM thanhtoan tt
                    JOIN donhang dh ON tt.madh = dh.madh
                    JOIN khachhang kh ON dh.makh = kh.makh
                    JOIN nhanvien nv ON dh.manv = nv.manv
                    WHERE 1=1";
+    
+    $params = [];
+    $types = '';
  
-    if (isset($_POST['dayChecked'])) {
-        $dayChecked = $_POST['dayChecked'];
-        if ($dayChecked) {
-            $day = $_POST['day'] != null ? (int)$_POST['day'] : 10;
-            $sql_select .= " AND DAY(dh.ngaydat) = '$day'";
-        }
+    if (isset($_POST['dayChecked']) && $_POST['dayChecked']) {
+        $dayChecked = true;
+        $day = isset($_POST['day']) && $_POST['day'] !== '' ? (int)$_POST['day'] : 10;
+        $sql_select .= " AND DAY(dh.ngaydat) = ?";
+        $params[] = $day;
+        $types .= 'i';
     }
 
-
-    if (isset($_POST['monthChecked'])){
-        $monthChecked = $_POST['monthChecked'];
-        if ($monthChecked) {
-            $month = $_POST['month'] != null ? (int)$_POST['month'] : 1;
-            $sql_select .= " AND MONTH(dh.ngaydat) = '$month'";
-        }
+    if (isset($_POST['monthChecked']) && $_POST['monthChecked']) {
+        $monthChecked = true;
+        $month = isset($_POST['month']) && $_POST['month'] !== '' ? (int)$_POST['month'] : 1;
+        $sql_select .= " AND MONTH(dh.ngaydat) = ?";
+        $params[] = $month;
+        $types .= 'i';
     }
 
-
-    if (isset($_POST['yearChecked'])) {
-        $yearChecked = $_POST['yearChecked'];
-        if ($yearChecked) {
-            $year = $_POST['year'] != null ? (int)$_POST['year'] : 2025;
-            $sql_select .= " AND YEAR(dh.ngaydat) = '$year'";
-        }
+    if (isset($_POST['yearChecked']) && $_POST['yearChecked']) {
+        $yearChecked = true;
+        $year = isset($_POST['year']) && $_POST['year'] !== '' ? (int)$_POST['year'] : date('Y');
+        $sql_select .= " AND YEAR(dh.ngaydat) = ?";
+        $params[] = $year;
+        $types .= 'i';
     }
 
-    if (isset($_POST['phuongThuc'])) {
+    if (isset($_POST['phuongThuc']) && $_POST['phuongThuc'] !== "Tất cả") {
         $phuongThucThanhToan = $_POST['phuongThuc'];
-        if ($phuongThucThanhToan != "Tất cả")
-            $sql_select .= " AND phuongThuc = '$phuongThucThanhToan'";
+        $sql_select .= " AND phuongThuc = ?";
+        $params[] = $phuongThucThanhToan;
+        $types .= 's';
     }
 
-
-    if (isset($_POST['trangThai'])) {
+    if (isset($_POST['trangThai']) && $_POST['trangThai'] !== "Tất cả") {
         $trangThaiThanhToan = $_POST['trangThai'];
-        if ($trangThaiThanhToan != "Tất cả")
-            $sql_select .= " AND trangThai = '$trangThaiThanhToan'";
+        $sql_select .= " AND trangThai = ?";
+        $params[] = $trangThaiThanhToan;
+        $types .= 's';
     }
 
-    $result = mysqli_query($conn, $sql_select);
-    $tong_bg = mysqli_num_rows($result);
+    // Execute query
+    $rows = $db->select($sql_select, $types, $params);
+    $tong_bg = count($rows);
+    
+    $phuongthuc = [];
+    $ngaythanhtoan = [];
+    $sotien = [];
+    $trangthai = [];
+    $ghichu = [];
+    $tenkh = [];
+    $tennv = [];
 
-    $stt = 0;
-    while($row = mysqli_fetch_assoc($result)) {
-        $stt++;
-        $phuongthuc[$stt] = $row['phuongthuc'];
-        $ngaythanhtoan[$stt] = $row['ngaythanhtoan'];
-        $sotien[$stt] = $row['sotien'];
-        $trangthai[$stt] = $row['trangthai'];
-        $ghichu[$stt] = $row['ghichu'];
-        $tenkh[$stt] = $row['tenkh'];
-        $tennv[$stt] = $row['tennv'];
+    foreach ($rows as $i => $row) {
+        $idx = $i + 1;
+        $phuongthuc[$idx] = $row['phuongthuc'];
+        $ngaythanhtoan[$idx] = $row['ngaythanhtoan'];
+        $sotien[$idx] = $row['sotien'];
+        $trangthai[$idx] = $row['trangthai'];
+        $ghichu[$idx] = $row['ghichu'];
+        $tenkh[$idx] = $row['tenkh'];
+        $tennv[$idx] = $row['tennv'];
     }
     ?>
 

@@ -17,9 +17,9 @@
  */
 
 // ── Kết nối DB nếu chưa có ─────────────────────────────────────────────
-if (!isset($conn)) {
-     include($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
-    require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/api/db.php');
+if (!isset($db)) {
+    require_once($_SERVER['DOCUMENT_ROOT'] . '/QLShopDT_API/config/database.php');
+    $db = Database::getInstance();
 }
 
 // ── Hệ thống phân quyền ────────────────────────────────────────────────
@@ -147,16 +147,16 @@ $base_url = '/QLShopDT_API';
                             <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
                             <span><?php echo $chucvu; ?></span>
                         </div>
-                        <a href="/QLShopDT_API/profile.php"><i class="fa fa-user"></i> Thông tin cá nhân</a>
+                        <a href="/QLShopDT_API/views/profile.php"><i class="fa fa-user"></i> Thông tin cá nhân</a>
                         <?php if (hasPermission('view_own_order')): ?>
                             <a href="/QLShopDT_API/views/donhang/donhang.php"><i class="fa fa-box"></i> Đơn hàng của tôi</a>
                         <?php endif; ?>
-                        <a href="/QLShopDT_API/views/logout.php" class="ps-logout"><i class="fa fa-sign-out-alt"></i> Đăng xuất</a>
+                        <a href="/QLShopDT_API/views/auth/logout.php" class="ps-logout"><i class="fa fa-sign-out-alt"></i> Đăng xuất</a>
                     </div>
                 </div>
             <?php else: ?>
-                <a href="/QLShopDT_API/views/login.php" class="ps-btn-outline"><i class="fa fa-user"></i> Đăng nhập</a>
-                <a href="/QLShopDT_API/views/register.php" class="ps-btn-fill"><i class="fa fa-key"></i> Đăng ký</a>
+                <a href="/QLShopDT_API/views/auth/login.php" class="ps-btn-outline"><i class="fa fa-user"></i> Đăng nhập</a>
+                <a href="/QLShopDT_API/views/auth/register.php" class="ps-btn-fill"><i class="fa fa-key"></i> Đăng ký</a>
             <?php endif; ?>
         </div>
     </div>

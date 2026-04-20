@@ -1,0 +1,44 @@
+# QLShopDT_API - Clean URLs
+# Yêu cầu: Bật mod_rewrite trong Apache (httpd.conf)
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /QLShopDT_API/
+    
+    # Bỏ qua các file/folder thực sự tồn tại
+    # (các file /api/*.php cũ vẫn hoạt động độc lập nhờ điều kiện này)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Bỏ qua các request đến /views/ (giữ tương thích ngược)
+    RewriteCond %{REQUEST_URI} !^/QLShopDT_API/views/
+    
+    # Bỏ qua các request đến /assets/ (CSS, JS, images)
+    RewriteCond %{REQUEST_URI} !^/QLShopDT_API/assets/
+    
+    # Bỏ qua các request đến /includes/
+    RewriteCond %{REQUEST_URI} !^/QLShopDT_API/includes/
+    
+    # Chuyển tất cả các request khác đến app.php
+    RewriteRule ^(.*)$ app.php/$1 [L,QSA]
+</IfModule>
+
+# Ngăn truy cập trực tiếp vào các file nhạy cảm
+<FilesMatch "\.(sql|md|gitignore)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Ngăn liệt kê thư mục
+Options -Indexes
+
+# Cache cho static files
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType application/javascript "access plus 1 week"
+</IfModule>

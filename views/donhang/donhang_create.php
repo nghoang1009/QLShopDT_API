@@ -1,73 +1,111 @@
-<?php
+﻿<?php
+/**
+ * Tạo Đơn hàng mới
+ */
 session_start();
-if (!isset($_SESSION['username'])) {
-    header("Location: ../login.php");
+require_once "../../includes/api_helper.php";
+
+requireLogin();
+requireRole([1, 2]);
+
+// Xử lý POST trước header
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $makh   = (int)$_POST['txt_makh'];
+    $trigia = (float)$_POST['num_trigia'];
+
+    if (!$makh || $trigia < 0) {
+        setFlash('error', 'Vui lòng nhập đầy đủ thông tin hợp lệ');
+        header("Location: donhang_create.php");
+        exit();
+    }
+
+    $data = [
+        'makh'   => $makh,
+        'trigia' => $trigia,
+    ];
+
+    $result = callAPI('POST', '/api/donhang', $data);
+
+    if ($result && $result['status']) {
+        setFlash('success', 'Tạo đơn hàng thành công');
+        header("Location: donhang.php");
+        exit();
+    }
+    setFlash('error', $result['message'] ?? 'Tạo đơn hàng thất bại');
+    header("Location: donhang_create.php");
     exit();
 }
 
+$error = getFlash('error');
+
+$page_title = 'Tạo Đơn hàng mới';
+$active_nav = 'donhang';
+$extra_css  = '<link rel="stylesheet" href="/QLShopDT_API/assets/css/donhang.css">
+<link rel="stylesheet" href="/QLShopDT_API/assets/css/footer.css">';
+
 include "../../includes/header.php";
-include "../../includes/api_helper.php";
-include "../../includes/footer.php";
-
-$thongbao = "";
-
-// Xử lý khi submit form
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Gọi API tạo đơn hàng
-    $result = callDonhangAPI([
-        "action"   => "add",
-        "makh"     => $_POST['txt_makh'],
-        "ngaydat"  => $_POST['date_ngaydat'],
-        "trigia"   => $_POST['num_trigia']
-    ]);
-
-    if ($result && $result['status']) {
-        header("Location: donhang.php");
-        exit();
-    } else {
-        $thongbao = "Lỗi: " . ($result['message'] ?? 'Không xác định');
-    }
-}
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tạo đơn hàng</title>
-</head>
-<body>
-    <h1 align="center">TẠO ĐƠN HÀNG</h1>
+<!-- Page Header -->
+<div class="dh-page-header">
+    <div class="dh-page-header-inner">
+        <div>
+            <h1 class="dh-page-title">Tạo đơn hàng mới</h1>
+            <p class="dh-page-subtitle">Thêm đơn hàng vào hệ thống</p>
+        </div>
+        <a href="donhang.php" class="dh-cancel-btn">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+    </div>
+</div>
 
-    <?php if ($thongbao): ?>
-        <p align="center" style="color:red;"><?php echo $thongbao; ?></p>
-    <?php endif; ?>
+<main class="container">
+    <div class="dh-form-wrap">
 
-    <form action="donhang_create.php" method="post">
-        <table align="center" border="1">
-            <tr>
-                <td colspan="2" align="center">Thông tin đơn hàng</td>
-            </tr>
-            <tr>
-                <td>Mã khách hàng</td>
-                <td><input type="number" name="txt_makh" min="1" required></td>
-            </tr>
-            <tr>
-                <td>Ngày đặt</td>
-                <td><input type="date" name="date_ngaydat" required></td>
-            </tr>
-            <tr>
-                <td>Tổng tiền</td>
-                <td><input type="number" name="num_trigia" min="0" required></td>
-            </tr>
-            <tr>
-                <td colspan="2" align="center">
-                    <input type="submit" value="TẠO ĐƠN HÀNG">
-                    <input type="button" value="HỦY" onclick="window.location.href='donhang.php'">
-                </td>
-            </tr>
-        </table>
-    </form>
-</body>
-</html>
+        <?php if ($error): ?>
+            <div class="dh-alert dh-alert-error">
+                <i class="fas fa-exclamation-circle"></i> <?= e($error) ?>
+            </div>
+        <?php endif; ?>
+
+        <div class="dh-form-card">
+            <div class="dh-form-card-header">
+                <div class="dh-form-icon"><i class="fas fa-receipt"></i></div>
+                <h2>Thông tin đơn hàng</h2>
+            </div>
+            <div class="dh-form-body">
+                <form method="POST" action="donhang_create.php">
+
+                    <div class="dh-form-group">
+                        <label for="txt_makh" class="dh-label">
+                            Mã khách hàng <span class="dh-required">*</span>
+                        </label>
+                        <input type="number" id="txt_makh" name="txt_makh"
+                               placeholder="Nhập mã khách hàng"
+                               class="dh-input" min="1" required>
+                    </div>
+
+                    <div class="dh-form-group">
+                        <label for="num_trigia" class="dh-label">
+                            Tổng tiền (VNĐ) <span class="dh-required">*</span>
+                        </label>
+                        <input type="number" id="num_trigia" name="num_trigia"
+                               placeholder="0" class="dh-input" min="0" value="0" required>
+                    </div>
+
+                    <div class="dh-form-actions">
+                        <button type="submit" class="dh-submit-btn">
+                            <i class="fas fa-plus"></i> Tạo đơn hàng
+                        </button>
+                        <a href="donhang.php" class="dh-cancel-btn">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<?php include "../../includes/footer.php"; ?>
