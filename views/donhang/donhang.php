@@ -118,6 +118,7 @@ include "../../includes/header.php";
                     <th>#</th>
                     <th>Mã ĐH</th>
                     <th style="text-align:left">Khách hàng</th>
+                    <th>Địa chỉ</th>
                     <th>SĐT</th>
                     <th>Ngày đặt</th>
                     <th>Tổng tiền</th>
@@ -143,10 +144,8 @@ include "../../includes/header.php";
                         <tr>
                             <td><?= $i + 1 ?></td>
                             <td class="dh-td-id">#<?= e($dh['madh']) ?></td>
-                            <td class="dh-td-name">
-                                <?= e($dh['tenkh']) ?>
-                                <small><?= e($dh['diachi']) ?></small>
-                            </td>
+                            <td class="dh-td-name"><?= e($dh['tenkh']) ?></td>
+                            <td><?= e($dh['diachi']) ?></td>
                             <td style="font-family:'Courier New',monospace;font-size:12px"><?= e($dh['sdt']) ?></td>
                             <td class="dh-td-date"><?= date('d/m/Y', strtotime($dh['ngaydat'])) ?></td>
                             <td class="dh-td-price"><?= formatMoney($dh['trigia']) ?></td>
@@ -172,7 +171,7 @@ include "../../includes/header.php";
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                        <td colspan="<?= $can_manage ? 9 : 8 ?>">
+                        <td colspan="<?= $can_manage ? 10 : 9 ?>">
                             <div class="dh-empty">
                                 <i class="fas fa-inbox"></i>
                                 <p>Chưa có đơn hàng nào</p>
@@ -183,7 +182,7 @@ include "../../includes/header.php";
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="<?= $can_manage ? 9 : 8 ?>">
+                    <td colspan="<?= $can_manage ? 10 : 9 ?>">
                         Tổng cộng: <strong><?= $tong_dh ?></strong> đơn hàng
                     </td>
                 </tr>
