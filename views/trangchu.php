@@ -172,7 +172,6 @@ require_once "../includes/header.php";
             <div class="ps-empty" style="grid-column:1/-1">
                 <div class="ps-empty-icon">🔍</div>
                 <p>Không tìm thấy sản phẩm nào!</p>
-                <a href="trangchu.php" style="color:#e74c3c;">← Quay lại trang chủ</a>
             </div>
         <?php endif; ?>
     </div>
