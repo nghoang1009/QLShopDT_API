@@ -255,4 +255,307 @@ class DonHangController extends Controller {
             echo json_encode(['status' => false, 'message' => 'Xóa đơn hàng thất bại']);
         }
     }
+
+    // ===================== WEB View Methods =====================
+
+    /**
+     * GET /donhang
+     * Danh sách đơn hàng
+     */
+    public function index() {
+        $this->requireLogin();
+
+        $role = $_SESSION['role'] ?? 0;
+        $userid = $_SESSION['userid'] ?? 0;
+
+        if ($role == 0) {
+            $orders = $this->donHangModel->getByCustomer($userid);
+        } else {
+            $orders = $this->donHangModel->getAllWithDetails();
+        }
+
+        $canEdit = in_array($role, [1, 2]);
+
+        $this->view('donhang/index', [
+            'page_title' => 'Quản lý Đơn hàng',
+            'active_nav' => 'donhang',
+            'orders' => $orders,
+            'role' => $role,
+            'canEdit' => $canEdit,
+            'success' => $this->getFlash('success'),
+            'error' => $this->getFlash('error')
+        ]);
+    }
+
+    /**
+     * GET /donhang/{id}
+     * Chi tiết đơn hàng
+     */
+    public function show($madh) {
+        $this->requireLogin();
+
+        $role = $_SESSION['role'] ?? 0;
+        $userid = $_SESSION['userid'] ?? 0;
+
+        $order = $this->donHangModel->getOneWithDetails($madh);
+
+        if (!$order) {
+            $this->setFlash('error', 'Không tìm thấy đơn hàng');
+            $this->redirect('/donhang');
+            return;
+        }
+
+        if ($role == 0 && $order['makh'] != $userid) {
+            $this->error403('Bạn không có quyền xem đơn hàng này');
+            return;
+        }
+
+        $orderDetails = $this->donHangModel->getOrderDetails($madh);
+
+        $this->view('donhang/detail', [
+            'page_title' => 'Chi tiết Đơn hàng #' . $madh,
+            'active_nav' => 'donhang',
+            'order' => $order,
+            'orderDetails' => $orderDetails,
+            'role' => $role
+        ]);
+    }
+
+    /**
+     * GET /donhang/create
+     * Form tạo đơn hàng mới
+     * Khách hàng: xác nhận giỏ hàng → đặt hàng
+     * Admin/Staff: chọn khách hàng → nhập tiền
+     */
+    public function create() {
+        $this->requireLogin();
+        
+        $role = (int)($_SESSION['role'] ?? 0);
+        $userid = $_SESSION['userid'] ?? 0;
+
+        if ($role == 0) {
+            // Khách hàng: lấy giỏ hàng của mình
+            $cartItems = $this->gioHangModel->getByCustomer($userid);
+            $customer = $this->khachHangModel->findById($userid);
+            
+            $total = 0;
+            foreach ($cartItems as $item) {
+                $total += $item['sl'] * $item['gia'];
+            }
+
+            $this->view('donhang/donhang_create', [
+                'page_title' => 'Đặt hàng',
+                'active_nav' => 'donhang',
+                'role' => $role,
+                'cartItems' => $cartItems,
+                'total' => $total,
+                'customer' => $customer
+            ]);
+        } else {
+            // Admin/Staff: danh sách khách hàng
+            $this->requireRole([1, 2]);
+            
+            $customers = $this->khachHangModel->getAll();
+
+            $this->view('donhang/donhang_create', [
+                'page_title' => 'Tạo đơn hàng',
+                'active_nav' => 'donhang',
+                'role' => $role,
+                'customers' => $customers
+            ]);
+        }
+    }
+
+    /**
+     * POST /donhang
+     * Xử lý tạo đơn hàng
+     * Khách hàng (role 0): tạo từ giỏ hàng
+     * Admin/Staff (role 1,2): tạo từ form
+     */
+    public function store() {
+        $this->requireLogin();
+        $this->verifyCsrf();
+
+        $role = (int)($_SESSION['role'] ?? 0);
+        $userid = $_SESSION['userid'] ?? 0;
+
+        if ($role == 0) {
+            // ========== KHÁCH HÀNG: Đặt hàng từ giỏ ==========
+            $makh = $userid;
+            
+            // Lấy giỏ hàng
+            $cartItems = $this->gioHangModel->getByCustomer($makh);
+            
+            if (empty($cartItems)) {
+                $this->setFlash('error', 'Giỏ hàng trống, không thể tạo đơn hàng');
+                $this->redirect('/giohang');
+                return;
+            }
+            
+            // Tính tổng tiền từ giỏ
+            $trigia = 0;
+            foreach ($cartItems as $item) {
+                $trigia += $item['sl'] * $item['gia'];
+            }
+            
+            // Tạo đơn hàng
+            $madh = $this->donHangModel->createOrder($makh, $trigia, null);
+            
+            if (!$madh) {
+                $this->setFlash('error', 'Tạo đơn hàng thất bại');
+                $this->redirect('/giohang');
+                return;
+            }
+            
+            // Thêm chi tiết sản phẩm
+            foreach ($cartItems as $item) {
+                $this->donHangModel->addOrderDetail($madh, $item['masp'], $item['sl'], $item['gia']);
+                // Giảm tồn kho
+                $this->sanPhamModel->updateStock($item['masp'], -$item['sl']);
+            }
+            
+            // Xóa giỏ hàng
+            $magio = $this->gioHangModel->getCartId($makh);
+            if ($magio) {
+                $this->gioHangModel->clearCart($magio);
+            }
+            
+            $this->setFlash('success', 'Đặt hàng thành công! Mã đơn hàng: #' . $madh);
+            $this->redirect('/donhang/' . $madh);
+
+        } else {
+            // ========== ADMIN/STAFF: Tạo đơn từ form ==========
+            $this->requireRole([1, 2]);
+            
+            $makh = (int)($this->input('makh') ?? 0);
+            $trigia = (float)($this->input('trigia') ?? 0);
+            
+            if ($makh <= 0 || $trigia < 0) {
+                $this->setFlash('error', 'Vui lòng nhập đầy đủ thông tin hợp lệ');
+                $this->redirect('/donhang/create');
+                return;
+            }
+            
+            $madh = $this->donHangModel->createOrder($makh, $trigia, $userid);
+            
+            if ($madh) {
+                $this->setFlash('success', 'Tạo đơn hàng thành công (Mã: #' . $madh . ')');
+                $this->redirect('/donhang/' . $madh);
+            } else {
+                $this->setFlash('error', 'Tạo đơn hàng thất bại');
+                $this->redirect('/donhang/create');
+            }
+        }
+    }
+
+    /**
+     * GET /donhang/{id}/edit
+     * Form chỉnh sửa đơn hàng
+     */
+    public function edit($madh) {
+        $this->requireRole([1, 2]);
+
+        $order = $this->donHangModel->getOneWithDetails($madh);
+
+        if (!$order) {
+            $this->setFlash('error', 'Không tìm thấy đơn hàng');
+            $this->redirect('/donhang');
+            return;
+        }
+
+        $orderDetails = $this->donHangModel->getOrderDetails($madh);
+        $customers = $this->khachHangModel->getAll();
+        $employees = $this->nhanVienModel->getAll();
+        $statuses = ['Chờ xác nhận', 'Đã xác nhận', 'Đang giao', 'Đã giao', 'Đã hủy'];
+
+        $this->view('donhang/edit', [
+            'page_title' => 'Sửa Đơn hàng #' . $madh,
+            'active_nav' => 'donhang',
+            'order' => $order,
+            'orderDetails' => $orderDetails,
+            'customers' => $customers,
+            'employees' => $employees,
+            'statuses' => $statuses
+        ]);
+    }
+
+    /**
+     * POST /donhang/{id}
+     * Xử lý cập nhật đơn hàng
+     */
+    public function update($madh = null) {
+        $this->requireRole([1, 2]);
+        $this->verifyCsrf();
+
+        if (!$madh) {
+            $madh = (int)($this->input('madh') ?? 0);
+        }
+
+        if ($madh <= 0) {
+            $this->setFlash('error', 'Mã đơn hàng không hợp lệ');
+            $this->redirect('/donhang');
+            return;
+        }
+
+        $trangthai = $this->input('trangthai');
+        $manv = $this->input('manv');
+
+        $order = $this->donHangModel->getOneWithDetails($madh);
+
+        if (!$order) {
+            $this->setFlash('error', 'Không tìm thấy đơn hàng');
+            $this->redirect('/donhang');
+            return;
+        }
+
+        if (!empty($trangthai)) {
+            $this->donHangModel->updateStatus($madh, $trangthai);
+        }
+
+        if (!empty($manv)) {
+            $this->db->execute("UPDATE donhang SET manv = ? WHERE madh = ?", 'ii', [$manv, $madh]);
+        }
+
+        $this->setFlash('success', 'Cập nhật đơn hàng thành công');
+        $this->redirect('/donhang/' . $madh);
+    }
+
+    /**
+     * GET /donhang/{id}/delete
+     * Xóa đơn hàng
+     */
+    public function delete($madh) {
+        $this->requireRole([1, 2]);
+
+        $order = $this->donHangModel->getOneWithDetails($madh);
+
+        if (!$order) {
+            $this->setFlash('error', 'Không tìm thấy đơn hàng');
+            $this->redirect('/donhang');
+            return;
+        }
+
+        if ($order['trangthai'] == 'Đã giao') {
+            $this->setFlash('error', 'Không thể xóa đơn hàng đã giao');
+            $this->redirect('/donhang');
+            return;
+        }
+
+        if ($order['trangthai'] != 'Đã hủy') {
+            $orderDetails = $this->donHangModel->getOrderDetails($madh);
+            foreach ($orderDetails as $item) {
+                $this->sanPhamModel->updateStock($item['masp'], $item['soluong']);
+            }
+        }
+
+        $result = $this->donHangModel->deleteOrder($madh);
+
+        if ($result) {
+            $this->setFlash('success', 'Xóa đơn hàng thành công');
+        } else {
+            $this->setFlash('error', 'Xóa đơn hàng thất bại');
+        }
+
+        $this->redirect('/donhang');
+    }
 }

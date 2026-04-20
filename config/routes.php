@@ -46,6 +46,15 @@ $router->post('/vanchuyen/update',          'VanChuyenController@update');
 $router->get('/vanchuyen/confirm/{mavc}',   'VanChuyenController@confirm');
 $router->get('/vanchuyen/delete/{mavc}',    'VanChuyenController@delete');
 
+// WEB: ĐƠN HÀNG
+$router->get('/donhang',            'DonHangController@index');     // Danh sách đơn hàng
+$router->get('/donhang/create',     'DonHangController@create');    // Form tạo đơn
+$router->post('/donhang',           'DonHangController@store');     // Xử lý tạo đơn
+$router->get('/donhang/{id}',       'DonHangController@show');      // Chi tiết đơn
+$router->get('/donhang/{id}/edit',  'DonHangController@edit');      // Form sửa đơn
+$router->post('/donhang/{id}',      'DonHangController@update');    // Xử lý sửa đơn
+$router->get('/donhang/{id}/delete','DonHangController@delete');    // Xóa đơn
+
 // ===================== SẢN PHẨM =====================
 $router->get('/api/sanpham',           'SanPhamController@index');   // ?keyword=, ?madm=, ?latest=N
 $router->get('/api/sanpham/{id}',      'SanPhamController@show');    // Chi tiết 1 sản phẩm

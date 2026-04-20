@@ -63,8 +63,16 @@ class DonHang extends Model {
     
     /**
      * Tạo đơn hàng mới
+     * @param int $makh - Mã khách hàng
+     * @param float $trigia - Trị giá đơn hàng
+     * @param int|null $manv - Mã nhân viên (null = 0 = chưa assign)
+     * @return int|false - Mã đơn hàng mới hoặc false nếu thất bại
      */
     public function createOrder($makh, $trigia, $manv = null) {
+        // Nếu không có manv, dùng 0 thay vì null
+        if ($manv === null) {
+            $manv = 0;
+        }
         $sql = "INSERT INTO donhang (makh, ngaydat, trigia, trangthai, manv) 
                 VALUES (?, NOW(), ?, 'Chờ xác nhận', ?)";
         return $this->db->insert($sql, 'idi', [$makh, $trigia, $manv]);
@@ -72,9 +80,15 @@ class DonHang extends Model {
     
     /**
      * Thêm chi tiết đơn hàng
+     * @param int $madh - Mã đơn hàng
+     * @param int $masp - Mã sản phẩm
+     * @param int $soluong - Số lượng
+     * @param float $dongia - Đơn giá (không lưu, chỉ dùng để lấy từ sanpham)
+     * @return int|false - Số hàng insert hoặc false
      */
-    public function addOrderDetail($madh, $masp, $soluong) {
-        $sql = "INSERT INTO chitietdonhang (madh, masp, sl) VALUES (?, ?, ?)";
+    public function addOrderDetail($madh, $masp, $soluong, $dongia = null) {
+        $sql = "INSERT INTO chitietdonhang (madh, masp, sl) 
+                VALUES (?, ?, ?)";
         return $this->db->insert($sql, 'iii', [$madh, $masp, $soluong]);
     }
     
