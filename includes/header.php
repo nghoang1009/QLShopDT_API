@@ -30,7 +30,9 @@ if (!isset($db)) {
  *   2 = Nhân viên (Staff)
  */
 
-// Quyền cho từng role
+// Quyền cho từng role — khai báo global để hasPermission() truy cập được
+// dù header.php được include từ bên trong method của controller
+global $permissions;
 $permissions = [
     0 => [ // Khách hàng
         'view_product',

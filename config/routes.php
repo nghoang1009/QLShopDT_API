@@ -26,6 +26,7 @@ $router->get('/giohang/remove/{masp}','GioHangController@webRemove');
 // ===================== ĐƠN HÀNG (WEB) =====================
 $router->get('/donhang/create',            'DonHangController@create');
 $router->post('/donhang/create',           'DonHangController@placeOrder');
+$router->get('/donhang/detail/{madh}',     'DonHangController@show');
 $router->post('/donhang/{madh}/cancel',    'DonHangController@cancel');
 
 // ===================== THANH TOÁN (WEB) =====================
