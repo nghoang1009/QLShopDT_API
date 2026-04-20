@@ -26,7 +26,7 @@ function ttBadge(string $trangthai): string {
 <div class="tt-toolbar">
     <h1>QUẢN LÝ THANH TOÁN</h1>
     <?php if ($canEdit): ?>
-        <a href="/QLShopDT_API/thanhtoan/add" class="tt-add-btn">+ Thêm thanh toán</a>
+        <a href="/QLShopDT_API/app.php/thanhtoan/add" class="tt-add-btn">+ Thêm thanh toán</a>
     <?php endif; ?>
 </div>
 

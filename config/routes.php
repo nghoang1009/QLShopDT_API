@@ -30,6 +30,8 @@ $router->post('/donhang/{madh}/cancel',    'DonHangController@cancel');
 
 // ===================== THANH TOÁN (WEB) =====================
 $router->get('/thanhtoan',               'ThanhToanController@index');
+$router->get('/thanhtoan/add',           'ThanhToanController@create');
+$router->post('/thanhtoan/store',        'ThanhToanController@store');
 $router->get('/thanhtoan/detail/{matt}', 'ThanhToanController@show');
 $router->get('/thanhtoan/edit/{matt}',   'ThanhToanController@edit');
 $router->post('/thanhtoan/update',       'ThanhToanController@update');
@@ -40,6 +42,8 @@ $router->get('/thongke', 'ThongKeController@index');
 
 // ===================== VẬN CHUYỂN (WEB) =====================
 $router->get('/vanchuyen',                  'VanChuyenController@index');
+$router->get('/vanchuyen/add',              'VanChuyenController@create');
+$router->post('/vanchuyen/store',           'VanChuyenController@store');
 $router->get('/vanchuyen/detail/{mavc}',    'VanChuyenController@show');
 $router->get('/vanchuyen/edit/{mavc}',      'VanChuyenController@edit');
 $router->post('/vanchuyen/update',          'VanChuyenController@update');

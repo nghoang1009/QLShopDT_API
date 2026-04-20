@@ -20,7 +20,7 @@ include BASE_PATH . '/includes/header.php';
     </div>
 
     <div class="vc-form-wrap">
-        <form method="POST" action="/QLShopDT_API/vanchuyen/store" class="vc-form">
+        <form method="POST" action="/QLShopDT_API/app.php/vanchuyen/store" class="vc-form">
             <?= csrf_field() ?>
 
             <div class="vc-form-group">

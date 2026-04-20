@@ -176,6 +176,50 @@ class VanChuyenController extends Controller {
         $this->redirect('/vanchuyen');
     }
 
+    /**
+     * GET /vanchuyen/add — Form thêm vận chuyển
+     */
+    public function create() {
+        $this->requireRole([1, 2]);
+
+        $orders    = $this->donHangModel->getAllWithDetails();
+        $customers = $this->khachHangModel->getAll();
+
+        $this->view('vanchuyen/create', [
+            'page_title' => 'Thêm Vận chuyển',
+            'active_nav' => 'vanchuyen',
+            'orders'     => $orders    ?: [],
+            'customers'  => $customers ?: [],
+        ]);
+    }
+
+    /**
+     * POST /vanchuyen/store — Xử lý thêm vận chuyển
+     */
+    public function store() {
+        $this->requireRole([1, 2]);
+
+        $madh     = (int)($_POST['madh']     ?? 0);
+        $makh     = (int)($_POST['makh']     ?? 0);
+        $ngaygiao = trim($_POST['ngaygiao']  ?? '');
+
+        if ($madh <= 0 || $makh <= 0 || empty($ngaygiao)) {
+            $this->setFlash('error', 'Vui lòng điền đầy đủ thông tin bắt buộc');
+            $this->redirect('/vanchuyen/add');
+            return;
+        }
+
+        $result = $this->vanChuyenModel->add($madh, $makh, $ngaygiao);
+
+        if ($result) {
+            $this->setFlash('success', 'Thêm vận chuyển thành công');
+        } else {
+            $this->setFlash('error', 'Thêm vận chuyển thất bại');
+        }
+
+        $this->redirect('/vanchuyen');
+    }
+
     // ===================== RESTful API Methods =====================
 
     /**

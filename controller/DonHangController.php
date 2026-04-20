@@ -227,18 +227,25 @@ class DonHangController extends Controller {
     public function apiUpdate($id) {
         header('Content-Type: application/json');
         $input = json_decode(file_get_contents('php://input'), true) ?: [];
-        $ok = false;
+        $updated = false;
+        $failed  = false;
+
         if (isset($input['trigia'])) {
-            $ok = $this->donHangModel->updateTrigia($id, $input['trigia']);
+            $r = $this->donHangModel->updateTrigia($id, $input['trigia']);
+            if ($r === false) $failed = true;
+            else $updated = true;
         }
         if (isset($input['trangthai'])) {
-            $ok = $this->donHangModel->updateStatus($id, $input['trangthai']);
+            $r = $this->donHangModel->updateStatus($id, $input['trangthai']);
+            if ($r === false) $failed = true;
+            else $updated = true;
         }
-        if ($ok) {
-            echo json_encode(['status' => true, 'message' => 'Cập nhật thành công']);
-        } else {
+
+        if ($failed) {
             http_response_code(500);
-            echo json_encode(['status' => false, 'message' => 'Cập nhật thất bại']);
+            echo json_encode(['status' => false, 'message' => 'Cập nhật thất bại'], JSON_UNESCAPED_UNICODE);
+        } else {
+            echo json_encode(['status' => true, 'message' => 'Cập nhật thành công'], JSON_UNESCAPED_UNICODE);
         }
     }
 
