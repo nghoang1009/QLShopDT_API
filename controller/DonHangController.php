@@ -113,6 +113,15 @@ class DonHangController extends Controller {
     }
 
     /**
+     * GET /donhang/detail/{madh} — Xem chi tiết đơn hàng
+     */
+    public function show($madh) {
+        $this->requireLogin();
+        header('Location: ' . BASE_URL . '/views/donhang/donhang_chitiet.php?madh=' . (int)$madh);
+        exit();
+    }
+
+    /**
      * POST /donhang/{madh}/cancel — Khách hàng hủy đơn hàng của mình
      * Chỉ được hủy khi trạng thái là "Chờ xác nhận"
      */
