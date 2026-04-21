@@ -20,8 +20,8 @@ $router->post('/api/auth/register', 'AuthController@apiRegister'); // JSON regis
 
 // ===================== GIỎ HÀNG (WEB) =====================
 $router->get('/giohang',              'GioHangController@index');
-$router->post('/giohang/update',      'GioHangController@webUpdate');
-$router->get('/giohang/remove/{masp}','GioHangController@webRemove');
+$router->post('/giohang/update',      'GioHangController@update');
+$router->get('/giohang/remove/{masp}','GioHangController@remove');
 
 // ===================== ĐƠN HÀNG (WEB) =====================
 $router->get('/donhang/create',            'DonHangController@create');
