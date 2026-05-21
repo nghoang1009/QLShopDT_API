@@ -2,6 +2,9 @@
 /**
  * Model Base - Lớp cơ sở cho tất cả Model
  */
+/**
+ * Model Base - Lớp cơ sở cho tất cả Model
+ */
 
 if (!defined('BASE_PATH')) {
     define('BASE_PATH', dirname(__DIR__));
