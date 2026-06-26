@@ -43,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Flash messages
 $error = getFlash('error');
-$success = getFlash('success');
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -68,13 +67,6 @@ $success = getFlash('success');
             </div>
             
             <div class="auth-body">
-                <?php if ($success): ?>
-                    <div class="auth-alert auth-alert-success">
-                        <i class="fa fa-check-circle"></i>
-                        <?= e($success) ?>
-                    </div>
-                <?php endif; ?>
-                
                 <?php if ($error): ?>
                     <div class="auth-alert auth-alert-error">
                         <i class="fa fa-exclamation-circle"></i>
