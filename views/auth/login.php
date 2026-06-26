@@ -13,11 +13,19 @@ if (isset($_SESSION['username'])) {
 
 // Xử lý POST trước output
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) {
-        setFlash('error', 'Phiên làm việc hết hạn. Vui lòng thử lại.');
-    } else {
+    do {
+        if (!verify_csrf()) {
+            setFlash('error', 'Phiên làm việc hết hạn. Vui lòng thử lại.');
+            break;
+        }
+
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
+
+        if (empty($username) || empty($password)) {
+            setFlash('error', 'Vui lòng điền đầy đủ thông tin đăng nhập.');
+            break;
+        }
 
         $authResponse = callAPI('POST', '/api/auth/login', [
             'username' => $username,
@@ -33,10 +41,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             header("Location: /QLShopDT_API/app.php/");
             exit();
-        } else {
+        } else 
             setFlash('error', $authResponse['message'] ?? "Tên đăng nhập hoặc mật khẩu không đúng!");
-        }
-    }
+    } while (false);
+
     header("Location: login.php");
     exit();
 }
@@ -81,7 +89,7 @@ $error = getFlash('error');
                         <label class="auth-label">Tên đăng nhập</label>
                         <div class="auth-input-wrapper">
                             <input type="text" name="username" class="auth-input" 
-                                   placeholder="Nhập tên đăng nhập" required autofocus>
+                                   placeholder="Nhập tên đăng nhập" autofocus>
                             <i class="fa fa-user"></i>
                         </div>
                     </div>
@@ -90,7 +98,7 @@ $error = getFlash('error');
                         <label class="auth-label">Mật khẩu</label>
                         <div class="auth-input-wrapper">
                             <input type="password" name="password" id="password" class="auth-input" 
-                                   placeholder="Nhập mật khẩu" required>
+                                   placeholder="Nhập mật khẩu">
                             <i class="fa fa-lock"></i>
                             <button type="button" class="auth-password-toggle" onclick="togglePassword('password', this)">
                                 <i class="fa fa-eye"></i>

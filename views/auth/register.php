@@ -13,9 +13,12 @@ if (isset($_SESSION['username'])) {
 
 // Xử lý POST trước output
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verify_csrf()) {
-        setFlash('error', 'Phiên làm việc hết hạn. Vui lòng thử lại.');
-    } else {
+    do {
+        if (!verify_csrf()) {
+            setFlash('error', 'Phiên làm việc hết hạn. Vui lòng thử lại.');
+            break;
+        }
+
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
         $confirm  = $_POST['confirm_password'] ?? '';
@@ -24,31 +27,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $phone    = trim($_POST['phone'] ?? '');
         
         // Validate
+        if (empty($username) || empty($password) || empty($confirm) || empty($name)){
+            setFlash('error', 'Các trường yêu cầu(*) chưa được điền đầy đủ');
+            break;
+        }
+
         if (strlen($password) < 6) {
             setFlash('error', 'Mật khẩu phải có ít nhất 6 ký tự');
-        } elseif ($password !== $confirm) {
-            setFlash('error', 'Mật khẩu xác nhận không khớp');
-        } else {
-            $registerData = [
-                'username' => $username,
-                'password' => $password,
-                'confirm_password' => $confirm,
-                'name' => $name,
-                'address' => $address,
-                'phone' => $phone
-            ];
-            
-            $registerResponse = callAPI('POST', '/api/auth/register', $registerData);
-            
-            if (!empty($registerResponse['status'])) {
-                setFlash('success', $registerResponse['message'] ?? 'Đăng ký thành công! Vui lòng đăng nhập.');
-                header("Location: login.php");
-                exit();
-            } else {
-                setFlash('error', $registerResponse['message'] ?? "Đăng ký thất bại!");
-            }
+            break;
         }
-    }
+
+        if (preg_match("/[A-Z]+/", $password) == 0) {
+            setFlash('error', "Mật khẩu phải bao gồm chữ hoa");
+            break;
+        }
+
+        if (preg_match("/[0-9]+/", $password) == 0) {
+            setFlash('error', "Mật khẩu phải chứa ít nhất 1 số");
+            break;
+        }
+
+        if (preg_match("/[!@#$%^&*?]+/", $password) == 0) {
+            setFlash('error', "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt: !@#$%^&*");
+            break;
+        }
+
+        if ($password !== $confirm) {
+            setFlash('error', 'Mật khẩu xác nhận không khớp');
+            break;
+        }
+
+        $registerData = [
+            'username' => $username,
+            'password' => $password,
+            'confirm_password' => $confirm,
+            'name' => $name,
+            'address' => $address,
+            'phone' => $phone
+        ];
+        
+        $registerResponse = callAPI('POST', '/api/auth/register', $registerData);
+        
+        if (!empty($registerResponse['status'])) {
+            setFlash('success', $registerResponse['message'] ?? 'Đăng ký thành công! Vui lòng đăng nhập.');
+            header("Location: login.php");
+            exit();
+        } else {
+            setFlash('error', $registerResponse['message'] ?? "Đăng ký thất bại!");
+        }
+    } while (false);
     header("Location: register.php");
     exit();
 }
@@ -95,19 +122,28 @@ $error = getFlash('error');
                         </label>
                         <div class="auth-input-wrapper">
                             <input type="text" name="username" class="auth-input" 
-                                   placeholder="Nhập tên đăng nhập" required autofocus>
+                                   placeholder="Nhập tên đăng nhập" autofocus>
                             <i class="fa fa-user"></i>
                         </div>
                     </div>
                     
+                    <div>
+                        <p><b>Yêu cầu cho mật khẩu:</b>
+                            <br> • 6 ký tự trở lên
+                            <br> • Bao gồm chữ hoa và chữ thường
+                            <br> • Bao gồm số
+                            <br> • Bao gồm ít nhất 1 trong các ký tự đặc biệt: !@#$%^&*
+                        </p>
+                        <br>
+                    </div>
+
                     <div class="auth-form-row">
                         <div class="auth-form-group">
                             <label class="auth-label">
                                 Mật khẩu <span class="auth-required">*</span>
                             </label>
                             <div class="auth-input-wrapper">
-                                <input type="password" name="password" id="password" class="auth-input" 
-                                       placeholder="Ít nhất 6 ký tự" minlength="6" required>
+                                <input type="password" name="password" id="password" class="auth-input" placeholder="Mật khẩu">
                                 <i class="fa fa-lock"></i>
                             </div>
                         </div>
@@ -118,7 +154,7 @@ $error = getFlash('error');
                             </label>
                             <div class="auth-input-wrapper">
                                 <input type="password" name="confirm_password" id="confirm_password" class="auth-input" 
-                                       placeholder="Nhập lại mật khẩu" required>
+                                       placeholder="Nhập lại mật khẩu" >
                                 <i class="fa fa-lock"></i>
                             </div>
                         </div>
@@ -130,7 +166,7 @@ $error = getFlash('error');
                         </label>
                         <div class="auth-input-wrapper">
                             <input type="text" name="name" class="auth-input" 
-                                   placeholder="Nhập họ và tên đầy đủ" required>
+                                   placeholder="Nhập họ và tên đầy đủ" >
                             <i class="fa fa-id-card"></i>
                         </div>
                     </div>
