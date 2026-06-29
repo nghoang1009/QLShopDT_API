@@ -16,6 +16,7 @@ const dsNhanVien = [
 ];
 
 test.describe('Quản lý nhân viên', () => {
+    test.use({ storageState: path.join(__dirname, '../../.auth/admin.json') });
     // Xóa nhân viên cũ cùng tên
   test.beforeAll(async ({ browser }) => {
     const ctx = await browser.newContext({

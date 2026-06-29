@@ -13,7 +13,7 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: '.',
+  testDir: './tests',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -39,47 +39,19 @@ export default defineConfig({
       name: 'auth',
       testMatch: 'tests/nhanvien/auth.setup.ts',
     },
-
-    {
-      name: 'nhanvien',
-      testDir: './tests/nhanvien',
-      testMatch: /nhanvien\.spec\.ts/,
-      dependencies: ['auth'],
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: '.auth/admin.json',
-      },
-    },
-
-    {
-      name: 'sanpham',
-      testDir: './tests/sanpham',
-      testMatch: /TC\d+\.spec\.ts/,
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'dangki',
-      testDir: './tests/Dangki',
-      testMatch: /\.spec\.js$/,
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
+  {
       name: 'chromium',
-      testMatch: /login\.spec\.ts/,
+      dependencies: ['auth'],
       use: { ...devices['Desktop Chrome'] },
     },
-
     {
       name: 'firefox',
-      testMatch: /login\.spec\.ts/,
+      dependencies: ['auth'],
       use: { ...devices['Desktop Firefox'] },
     },
-
     {
       name: 'webkit',
-      testMatch: /login\.spec\.ts/,
+      dependencies: ['auth'],
       use: { ...devices['Desktop Safari'] },
     },
 

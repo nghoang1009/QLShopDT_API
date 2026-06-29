@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
     if (!empty($ns) && strtotime($ns) > time()) {
-        setFlash('error', 'Ngày sinh không được là ngày trong tương lai');
+        setFlash('error', 'Ngày sinh không hợp lệ');
         header("Location: nhanvien_add.php");
         exit();
     }
