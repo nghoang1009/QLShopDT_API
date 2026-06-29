@@ -79,8 +79,10 @@ include "../../includes/header.php";
                         <td><?= $nv['ns'] ? date('d/m/Y', strtotime($nv['ns'])) : '—' ?></td>
                         <td>
                             <a href="nhanvien_edit.php?manv=<?= e($nv['manv']) ?>">Sửa</a>
-                            <a href="nhanvien_del.php?manv=<?= e($nv['manv']) ?>"
-                               onclick="return confirm('Bạn có chắc muốn xóa nhân viên \"<?= e($nv['tennv']) ?>\"?')">Xóa</a>
+                            <a href="#"
+                               class="nv-delete-btn"
+                               data-manv="<?= e($nv['manv']) ?>"
+                               data-tennv="<?= e($nv['tennv']) ?>">Xóa</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -102,5 +104,47 @@ include "../../includes/header.php";
     </table>
 
 </main>
+
+<!-- Modal xác nhận xóa nhân viên -->
+<div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:999; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:10px; padding:28px 32px; max-width:420px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+    <h3 style="margin:0 0 12px; font-size:1.1rem;">Xác nhận xóa nhân viên</h3>
+    <p id="deleteModalMsg" style="margin:0 0 24px; color:#444;"></p>
+    <div style="display:flex; gap:12px; justify-content:flex-end;">
+      <button id="deleteCancelBtn"
+              style="padding:8px 20px; border:1px solid #ccc; border-radius:6px; background:#fff; cursor:pointer;">Hủy</button>
+      <a id="deleteConfirmBtn" href="#"
+         style="padding:8px 20px; border-radius:6px; background:#e74c3c; color:#fff; text-decoration:none; font-weight:600;">Xóa</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const modal   = document.getElementById('deleteModal');
+  const msg     = document.getElementById('deleteModalMsg');
+  const confirmBtn = document.getElementById('deleteConfirmBtn');
+  const cancelBtn  = document.getElementById('deleteCancelBtn');
+
+  document.querySelectorAll('.nv-delete-btn').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const manv  = btn.dataset.manv;
+      const tennv = btn.dataset.tennv;
+      msg.textContent = 'Bạn có chắc muốn xóa nhân viên "' + tennv + '" không? Hành động này không thể hoàn tác.';
+      confirmBtn.href = 'nhanvien_del.php?manv=' + manv;
+      modal.style.display = 'flex';
+    });
+  });
+
+  cancelBtn.addEventListener('click', function () {
+    modal.style.display = 'none';
+  });
+
+  modal.addEventListener('click', function (e) {
+    if (e.target === modal) modal.style.display = 'none';
+  });
+})();
+</script>
 
 <?php include "../../includes/footer.php"; ?>

@@ -20,6 +20,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: nhanvien_edit.php?manv=" . $manv);
         exit();
     }
+    if (mb_strlen($tennv) > 100) {
+        setFlash('error', 'Tên nhân viên không được quá 100 ký tự');
+        header("Location: nhanvien_edit.php?manv=" . $manv);
+        exit();
+    }
+    if (!empty($sdt) && !preg_match('/^[0-9]{10,11}$/', $sdt)) {
+        setFlash('error', 'Số điện thoại không hợp lệ (chỉ gồm 10-11 chữ số)');
+        header("Location: nhanvien_edit.php?manv=" . $manv);
+        exit();
+    }
+    if (!empty($ns) && strtotime($ns) > time()) {
+        setFlash('error', 'Ngày sinh không được là ngày trong tương lai');
+        header("Location: nhanvien_edit.php?manv=" . $manv);
+        exit();
+    }
+    if (!empty($ns)) {
+        $birthDate = new DateTime($ns);
+        $age = (int)(new DateTime())->diff($birthDate)->y;
+        if ($age < 18) {
+            setFlash('error', 'Nhân viên phải đủ 18 tuổi');
+            header("Location: nhanvien_edit.php?manv=" . $manv);
+            exit();
+        }
+    }
 
     $result = callAPI('PUT', '/api/nhanvien/' . $manv, [
         'tennv' => $tennv,
@@ -75,21 +99,21 @@ include "../../includes/header.php";
             </label>
             <input type="text" id="txt_tennv" name="txt_tennv"
                    value="<?= e($nv['tennv']) ?>"
-                   class="dm-input" required>
+                   class="dm-input" required maxlength="100">
         </div>
 
         <div class="dm-form-group">
             <label for="txt_sdt" class="dm-label">Số điện thoại</label>
             <input type="text" id="txt_sdt" name="txt_sdt"
                    value="<?= e($nv['sdt']) ?>"
-                   class="dm-input">
+                   class="dm-input" pattern="[0-9]{10,11}" title="Số điện thoại gồm 10-11 chữ số">
         </div>
 
         <div class="dm-form-group">
             <label for="date_ns" class="dm-label">Ngày sinh</label>
             <input type="date" id="date_ns" name="date_ns"
                    value="<?= e($nv['ns']) ?>"
-                   class="dm-input">
+                   class="dm-input" max="<?= date('Y-m-d') ?>">
         </div>
 
         <div class="dm-form-actions">

@@ -21,7 +21,7 @@ export default defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -36,17 +36,50 @@ export default defineConfig({
   /* Configure projects for major browsers */
   projects: [
     {
+      name: 'auth',
+      testMatch: 'tests/nhanvien/auth.setup.ts',
+    },
+
+    {
+      name: 'nhanvien',
+      testDir: './tests/nhanvien',
+      testMatch: /nhanvien\.spec\.ts/,
+      dependencies: ['auth'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: '.auth/admin.json',
+      },
+    },
+
+    {
+      name: 'sanpham',
+      testDir: './tests/sanpham',
+      testMatch: /TC\d+\.spec\.ts/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    {
+      name: 'dangki',
+      testDir: './tests/Dangki',
+      testMatch: /\.spec\.js$/,
+      use: { ...devices['Desktop Chrome'] },
+    },
+
+    {
       name: 'chromium',
+      testMatch: /login\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
     },
 
     {
       name: 'firefox',
+      testMatch: /login\.spec\.ts/,
       use: { ...devices['Desktop Firefox'] },
     },
 
     {
       name: 'webkit',
+      testMatch: /login\.spec\.ts/,
       use: { ...devices['Desktop Safari'] },
     },
 

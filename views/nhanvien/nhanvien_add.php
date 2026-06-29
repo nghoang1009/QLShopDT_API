@@ -21,8 +21,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header("Location: nhanvien_add.php");
         exit();
     }
+    if (mb_strlen($tennv) > 100) {
+        setFlash('error', 'Tên nhân viên không được quá 100 ký tự');
+        header("Location: nhanvien_add.php");
+        exit();
+    }
+    if (!empty($sdt) && !preg_match('/^[0-9]{10,11}$/', $sdt)) {
+        setFlash('error', 'Số điện thoại không hợp lệ (chỉ gồm 10-11 chữ số)');
+        header("Location: nhanvien_add.php");
+        exit();
+    }
+    if (!empty($ns) && strtotime($ns) > time()) {
+        setFlash('error', 'Ngày sinh không được là ngày trong tương lai');
+        header("Location: nhanvien_add.php");
+        exit();
+    }
+    if (!empty($ns)) {
+        $birthDate = new DateTime($ns);
+        $age = (int)(new DateTime())->diff($birthDate)->y;
+        if ($age < 18) {
+            setFlash('error', 'Nhân viên phải đủ 18 tuổi');
+            header("Location: nhanvien_add.php");
+            exit();
+        }
+    }
     if (empty($username) || empty($password)) {
         setFlash('error', 'Tên đăng nhập và mật khẩu không được để trống');
+        header("Location: nhanvien_add.php");
+        exit();
+    }
+    if (mb_strlen($password) < 6) {
+        setFlash('error', 'Mật khẩu phải có ít nhất 6 ký tự');
+        header("Location: nhanvien_add.php");
+        exit();
+    }
+    
+    require_once "../../config/database.php";
+    $db = Database::getInstance();
+    $existingUser = $db->select("SELECT 1 FROM taikhoan WHERE tentk = ?", 's', [$username]);
+    if ($existingUser) {
+        setFlash('error', 'Tên đăng nhập đã tồn tại');
         header("Location: nhanvien_add.php");
         exit();
     }
@@ -71,7 +109,7 @@ include "../../includes/header.php";
             </label>
             <input type="text" id="txt_tennv" name="txt_tennv"
                    placeholder="Nhập tên nhân viên"
-                   class="dm-input" required>
+                   class="dm-input" required maxlength="100">
         </div>
 
         <div class="dm-form-group">
@@ -85,12 +123,12 @@ include "../../includes/header.php";
             <label for="txt_sdt" class="dm-label">Số điện thoại</label>
             <input type="text" id="txt_sdt" name="txt_sdt"
                    placeholder="Nhập số điện thoại"
-                   class="dm-input">
+                   class="dm-input" pattern="[0-9]{10,11}" title="Số điện thoại gồm 10-11 chữ số">
         </div>
 
         <div class="dm-form-group">
             <label for="date_ns" class="dm-label">Ngày sinh</label>
-            <input type="date" id="date_ns" name="date_ns" class="dm-input">
+            <input type="date" id="date_ns" name="date_ns" class="dm-input" max="<?= date('Y-m-d') ?>">
         </div>
 
         <hr style="margin: 16px 0; border-color: #eee;">
@@ -110,8 +148,8 @@ include "../../includes/header.php";
                 Mật khẩu <span class="dm-required">*</span>
             </label>
             <input type="password" id="txt_password" name="txt_password"
-                   placeholder="Nhập mật khẩu"
-                   class="dm-input" required>
+                   placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                   class="dm-input" required minlength="6">
         </div>
 
         <div class="dm-form-actions">

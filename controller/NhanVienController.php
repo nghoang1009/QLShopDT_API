@@ -147,6 +147,7 @@ class NhanVienController extends Controller {
 
         $ok = $this->nhanVienModel->deleteStaff($id);
         if ($ok !== false) {
+            $this->taiKhoanModel->delete($id);
             echo json_encode(['status' => true, 'message' => 'Xóa nhân viên thành công'], JSON_UNESCAPED_UNICODE);
         } else {
             http_response_code(500);

@@ -247,7 +247,7 @@ table td a[href*="edit"]:hover, table td a[href*="nhanvien_edit"]:hover {
     transform: translateY(-2px);
 }
 
-table td a[href*="del"], table td a[href*="nhanvien_del"] {
+table td a[href*="del"], table td a[href*="nhanvien_del"], table td a.nv-delete-btn {
     display: inline-block;
     padding: 5px 14px;
     background: #ef4444;
@@ -260,7 +260,7 @@ table td a[href*="del"], table td a[href*="nhanvien_del"] {
     margin: 2px;
 }
 
-table td a[href*="del"]:hover, table td a[href*="nhanvien_del"]:hover {
+table td a[href*="del"]:hover, table td a[href*="nhanvien_del"]:hover, table td a.nv-delete-btn:hover {
     background: #dc2626;
     transform: translateY(-2px);
 }
