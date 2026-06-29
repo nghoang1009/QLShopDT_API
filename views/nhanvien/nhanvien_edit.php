@@ -11,9 +11,10 @@ requireRole([1]);
 $manv = (int)($_GET['manv'] ?? $_POST['manv'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tennv = trim($_POST['txt_tennv'] ?? '');
-    $sdt   = trim($_POST['txt_sdt']   ?? '');
-    $ns    = trim($_POST['date_ns']   ?? '');
+    do {
+        $tennv = trim($_POST['txt_tennv'] ?? '');
+        $sdt   = trim($_POST['txt_sdt']   ?? '');
+        $ns    = trim($_POST['date_ns']   ?? '');
 
     if (empty($tennv)) {
         setFlash('error', 'Tên nhân viên không được để trống');
@@ -45,18 +46,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $result = callAPI('PUT', '/api/nhanvien/' . $manv, [
-        'tennv' => $tennv,
-        'sdt'   => $sdt,
-        'ns'    => $ns,
-    ]);
+        if ($sdt !== '' && !preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+            setFlash('error', 'Số điện thoại không hợp lệ');
+            break;
+        }
 
-    if ($result && $result['status']) {
-        setFlash('success', 'Cập nhật nhân viên thành công');
-        header("Location: nhanvien.php");
-        exit();
-    }
-    setFlash('error', $result['message'] ?? 'Cập nhật thất bại');
+        if ($ns !== '') {
+            if (strtotime($ns) === false || strtotime($ns) > time()) {
+                setFlash('error', 'Ngày sinh không hợp lệ');
+                break;
+            }
+            $tuoi = (int)date_diff(date_create($ns), date_create('today'))->y;
+            if ($tuoi < 18) {
+                setFlash('error', 'Nhân viên phải đủ 18 tuổi');
+                break;
+            }
+        }
+
+        $result = callAPI('PUT', '/api/nhanvien/' . $manv, [
+            'tennv' => $tennv,
+            'sdt'   => $sdt,
+            'ns'    => $ns,
+        ]);
+
+        if ($result && $result['status']) {
+            setFlash('success', 'Cập nhật nhân viên thành công');
+            header("Location: nhanvien.php");
+            exit();
+        }
+        setFlash('error', $result['message'] ?? 'Cập nhật thất bại');
+    } while (false);
     header("Location: nhanvien_edit.php?manv=" . $manv);
     exit();
 }

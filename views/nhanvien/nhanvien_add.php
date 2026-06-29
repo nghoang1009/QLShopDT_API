@@ -9,12 +9,13 @@ requireLogin();
 requireRole([1]);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $tennv    = trim($_POST['txt_tennv']    ?? '');
-    $sdt      = trim($_POST['txt_sdt']      ?? '');
-    $ns       = trim($_POST['date_ns']      ?? '');
-    $diachi   = trim($_POST['txt_diachi']   ?? '');
-    $username = trim($_POST['txt_username'] ?? '');
-    $password = trim($_POST['txt_password'] ?? '');
+    do {
+        $tennv    = trim($_POST['txt_tennv']    ?? '');
+        $sdt      = trim($_POST['txt_sdt']      ?? '');
+        $ns       = trim($_POST['date_ns']      ?? '');
+        $diachi   = trim($_POST['txt_diachi']   ?? '');
+        $username = trim($_POST['txt_username'] ?? '');
+        $password = trim($_POST['txt_password'] ?? '');
 
     if (empty($tennv)) {
         setFlash('error', 'Tên nhân viên không được để trống');
@@ -65,21 +66,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    $result = callAPI('POST', '/api/nhanvien', [
-        'tennv'    => $tennv,
-        'sdt'      => $sdt,
-        'ns'       => $ns,
-        'diachi'   => $diachi,
-        'username' => $username,
-        'password' => $password,
-    ]);
+        if (empty($username) || empty($password)) {
+            setFlash('error', 'Tên đăng nhập và mật khẩu không được để trống');
+            break;
+        }
 
-    if ($result && $result['status']) {
-        setFlash('success', 'Thêm nhân viên "' . $tennv . '" thành công');
-        header("Location: nhanvien.php");
-        exit();
-    }
-    setFlash('error', $result['message'] ?? 'Thêm nhân viên thất bại');
+        if (strlen($username) < 4) {
+            setFlash('error', 'Tên đăng nhập phải có ít nhất 4 ký tự');
+            break;
+        }
+
+        if (strlen($password) < 6) {
+            setFlash('error', 'Mật khẩu phải có ít nhất 6 ký tự');
+            break;
+        }
+
+        if ($sdt !== '' && !preg_match('/^0[0-9]{9,10}$/', $sdt)) {
+            setFlash('error', 'Số điện thoại không hợp lệ');
+            break;
+        }
+
+        if ($ns !== '') {
+            if (strtotime($ns) === false || strtotime($ns) > time()) {
+                setFlash('error', 'Ngày sinh không hợp lệ');
+                break;
+            }
+            $tuoi = (int)date_diff(date_create($ns), date_create('today'))->y;
+            if ($tuoi < 18) {
+                setFlash('error', 'Nhân viên phải đủ 18 tuổi');
+                break;
+            }
+        }
+
+        $result = callAPI('POST', '/api/nhanvien', [
+            'tennv'    => $tennv,
+            'sdt'      => $sdt,
+            'ns'       => $ns,
+            'diachi'   => $diachi,
+            'username' => $username,
+            'password' => $password,
+        ]);
+
+        if ($result && $result['status']) {
+            setFlash('success', 'Thêm nhân viên "' . $tennv . '" thành công');
+            header("Location: nhanvien.php");
+            exit();
+        }
+        setFlash('error', $result['message'] ?? 'Thêm nhân viên thất bại');
+    } while (false);
     header("Location: nhanvien_add.php");
     exit();
 }
