@@ -17,42 +17,59 @@ $danhmucs = ($dm_result && $dm_result['status']) ? $dm_result['data'] : [];
 
 // Xử lý POST trước header
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verify_csrf();
-    
-    $tensp   = trim($_POST['tensp'] ?? '');
-    $gia     = (float)($_POST['gia'] ?? 0);
-    $sl      = (int)($_POST['sl'] ?? 0);
-    $hang    = trim($_POST['hang'] ?? '');
-    $baohanh = (int)($_POST['baohanh'] ?? 0);
-    $ghichu  = trim($_POST['ghichu'] ?? '');
-    $madm    = (int)($_POST['madm'] ?? 0);
-    $hinhanh = $_POST['hinhanh_cu'] ?? '';
-    
-    // Xử lý upload ảnh mới (nếu có)
-    if (isset($_FILES['hinhanh']) && $_FILES['hinhanh']['error'] === UPLOAD_ERR_OK) {
-        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $ext = strtolower(pathinfo($_FILES['hinhanh']['name'], PATHINFO_EXTENSION));
-        
-        if (in_array($ext, $allowed)) {
-            $hinhanh_new = 'sp_' . time() . '_' . uniqid() . '.' . $ext;
-            $upload_path = dirname(dirname(__DIR__)) . '/includes/img/' . $hinhanh_new;
-            
-            if (move_uploaded_file($_FILES['hinhanh']['tmp_name'], $upload_path)) {
-                // Xóa ảnh cũ nếu có
-                if (!empty($hinhanh)) {
-                    $old_path = dirname(dirname(__DIR__)) . '/includes/img/' . $hinhanh;
-                    if (file_exists($old_path)) {
-                        @unlink($old_path);
+    do {
+        if (!verify_csrf()) {
+            setFlash('error', 'Phiên làm việc hết hạn. Vui lòng thử lại.');
+            break;
+        }
+
+        $tensp   = trim($_POST['tensp'] ?? '');
+        $gia     = (float)($_POST['gia'] ?? 0);
+        $sl      = (int)($_POST['sl'] ?? 0);
+        $hang    = trim($_POST['hang'] ?? '');
+        $baohanh = (int)($_POST['baohanh'] ?? 0);
+        $ghichu  = trim($_POST['ghichu'] ?? '');
+        $madm    = (int)($_POST['madm'] ?? 0);
+        $hinhanh = $_POST['hinhanh_cu'] ?? '';
+
+        // Validate
+        if (empty($tensp)) {
+            setFlash('error', 'Vui lòng nhập tên sản phẩm');
+            break;
+        }
+
+        if ($madm <= 0) {
+            setFlash('error', 'Chưa chọn danh mục sản phẩm');
+            break;
+        }
+
+        if ($gia < 0 || $sl < 0 || $baohanh < 0) {
+            setFlash('error', 'Giá trị không hợp lệ');
+            break;
+        }
+
+        // Xử lý upload ảnh mới (nếu có)
+        if (isset($_FILES['hinhanh']) && $_FILES['hinhanh']['error'] === UPLOAD_ERR_OK) {
+            $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $ext = strtolower(pathinfo($_FILES['hinhanh']['name'], PATHINFO_EXTENSION));
+
+            if (in_array($ext, $allowed)) {
+                $hinhanh_new = 'sp_' . time() . '_' . uniqid() . '.' . $ext;
+                $upload_path = dirname(dirname(__DIR__)) . '/includes/img/' . $hinhanh_new;
+
+                if (move_uploaded_file($_FILES['hinhanh']['tmp_name'], $upload_path)) {
+                    // Xóa ảnh cũ nếu có
+                    if (!empty($hinhanh)) {
+                        $old_path = dirname(dirname(__DIR__)) . '/includes/img/' . $hinhanh;
+                        if (file_exists($old_path)) {
+                            @unlink($old_path);
+                        }
                     }
+                    $hinhanh = $hinhanh_new;
                 }
-                $hinhanh = $hinhanh_new;
             }
         }
-    }
-    
-    if (empty($tensp)) {
-        setFlash('error', 'Vui lòng nhập tên sản phẩm');
-    } else {
+
         $result = callAPI('PUT', '/api/sanpham/' . (int)$masp, [
             'tensp'   => $tensp,
             'gia'     => $gia,
@@ -63,14 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'hinhanh' => $hinhanh,
             'madm'    => $madm,
         ]);
-        
+
         if ($result && $result['status']) {
             setFlash('success', 'Cập nhật sản phẩm thành công');
             header("Location: sanpham.php");
             exit();
         }
         setFlash('error', $result['message'] ?? 'Lỗi không xác định');
-    }
+    } while (false);
     header("Location: sanpham_edit.php?masp=" . $masp);
     exit();
 }

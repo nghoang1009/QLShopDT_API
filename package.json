@@ -1,0 +1,23 @@
+{
+  "name": "qlshopdt_api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nghoang1009/QLShopDT_API.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nghoang1009/QLShopDT_API/issues"
+  },
+  "homepage": "https://github.com/nghoang1009/QLShopDT_API#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.0.1"
+  }
+}
