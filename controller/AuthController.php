@@ -1,6 +1,6 @@
 <?php
 /**
- * AuthController - Controller xử lý đăng nhập, đăng xuất, đăng ký
+ * AuthController - Controller xử lý đăng nhập, đăng xuất, đăng kývhcghvvhhhhhhhhhhhhvhv
  */
 
 class AuthController extends Controller {
